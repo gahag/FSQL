@@ -1,16 +1,16 @@
-## FSQL - File System Query Language
+# FSQL - File System Query Language
 
 FSQL is a tool for performing queries on the local filesystem
 with syntax similar to SQL.
 
 ## Usage examples
-# Standard select clause
+### Standard select clause
   select name from dir
 
-# Standard where clause
+### Standard where clause
   select date from dir where name == myFile && date == 2015-12-30 || name > t
 
-# Standard inner join clause
+### Standard inner join clause
   select name from dir inner join dir' on date
 
 ## Installation
