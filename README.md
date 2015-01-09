@@ -20,7 +20,7 @@ page at
 
 ## License
 
-Copyright (C) 2015 Gabriel Silva Bastos
+Copyright (C) 2015 gahag
 
 All rights reserved.
 

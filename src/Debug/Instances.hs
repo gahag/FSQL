@@ -1,6 +1,6 @@
 {- FSQL : Debug/Instances.hs -- Type instances for debuging
  -
- - Copyright (C) 2015 Gabriel Silva Bastos
+ - Copyright (C) 2015 gahag
  - All rights reserved.
  -
  - This software may be modified and distributed under the terms
