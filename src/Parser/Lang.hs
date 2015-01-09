@@ -64,7 +64,7 @@ module Parser.Lang where
                 Date -> parseVal DayVal
                 Size -> parseVal SizeVal
     where
-      parseVal f = maybe (fail ("invalid " ++ show s)) (return . f) . readMaybe
+      parseVal f = maybe (fail $ "invalid " ++ show s) (return . f) . readMaybe
 
   fsql_joinType =  (reserved "inner" $> Inner)
                <|> (reserved "outer" $> Outer)
