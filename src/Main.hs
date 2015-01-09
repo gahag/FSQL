@@ -23,7 +23,13 @@ module Main where
   
   
   
-  main = getArgs >>= \case []   -> command_loop
+  usage = putStrLn $ "Enter query statement or quit|exit to leave.\n\
+                    \FSQL can also be used straight from the command line: \
+                    \fsql <query>\n
+                    \Please note that where statements should be quoted in the \
+                    \commandline, as they may be interpreted as shell commands."
+
+  main = getArgs >>= \case []   -> usage >> command_loop
                            args -> either print_err (print_query . fetch_query)
                                    $ parse_fsql (unwords args)
     where

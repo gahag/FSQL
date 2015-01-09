@@ -28,21 +28,21 @@ ObjDir = Build/Obj
 
 SrcDir = src/
 
-OutputFile = $(BinDir)$(basename $(notdir ${f}))
+OutputFile = $(BinDir)fsql
 
 
 all :
 	$(CheckDirs)
-	$(Build) $(ObjFlag) $(Include) $(OutFlag) ${f}
+	$(Build) $(ObjFlag) $(Include) $(OutFlag) src/Main.hs
 
 
 dyn : $(LibDir)
 	$(CheckDirs)
-	$(Build) $(DynFlag) $(ObjFlag)$(DynFlag) $(Include) $(OutFlag)$(DynFlag) ${f}
+	$(Build) $(DynFlag) $(ObjFlag)$(DynFlag) $(Include) $(OutFlag)$(DynFlag) src/Main.hs
 
 opt :
 	$(CheckDirs)
-	$(Build) $(OptFlag) $(ObjFlag)$(OptFlag) $(Include) $(OutFlag)$(OptFlag) ${f}
+	$(Build) $(OptFlag) $(ObjFlag)$(OptFlag) $(Include) $(OutFlag)$(OptFlag) src/Main.hs
 	$(Strip) $(OutputFile)$(OptFlag)
 	$(Pack)  $(OutputFile)$(OptFlag)
 	
