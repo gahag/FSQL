@@ -24,8 +24,8 @@ module Main where
   
   
   usage = putStrLn $ "Enter query statement or quit|exit to leave.\n\
-                    \FSQL can also be used straight from the command line: \
-                    \fsql <query>\n
+                    \FSQL can also be used straight from the commandline: \
+                    \fsql <query>\n\
                     \Please note that where statements should be quoted in the \
                     \commandline, as they may be interpreted as shell commands."
 
