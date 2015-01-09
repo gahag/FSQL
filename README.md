@@ -4,14 +4,14 @@ FSQL is a tool for performing queries on the local filesystem
 with syntax similar to SQL.
 
 ## Usage examples
-  # Standard select clause
-    select name from dir
+# Standard select clause
+  select name from dir
 
-  # Standard where clause
-    select date from dir where name == myFile && date == 2015-12-30 || name > t
+# Standard where clause
+  select date from dir where name == myFile && date == 2015-12-30 || name > t
 
-  # Standard inner join clause
-    select name from dir inner join dir' on date
+# Standard inner join clause
+  select name from dir inner join dir' on date
 
 ## Installation
 
