@@ -11,7 +11,7 @@
 
 module Main where
   
-  import Data.Char            (isSpace)
+  import Data.Char  (isSpace)
 
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
