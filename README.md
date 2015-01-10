@@ -18,11 +18,7 @@ select date from dir where name == myFile && date == 2015-12-30 || name > t
 
 ### Standard inner join clause
 ```sql
-<<<<<<< HEAD
 select name from dir inner join dir on date
-=======
-select name from dir inner join dir on date
->>>>>>> bc5b838cbc20b9c86e1db6dc80772bf771abeed5
 ```
 
 ## Installation
