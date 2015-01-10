@@ -7,13 +7,19 @@ with syntax similar to SQL.
 Check the Specification file for the complete usage guide.
 
 ### Standard select clause
-  select name from dir
+```sql
+select name from dir
+```
 
 ### Standard where clause
-  select date from dir where name == myFile && date == 2015-12-30 || name > t
+```sql
+select date from dir where name == myFile && date == 2015-12-30 || name > t
+```
 
 ### Standard inner join clause
-  select name from dir inner join dir' on date
+```sql
+select name from dir inner join dir' on date
+```
 
 ## Installation
 
