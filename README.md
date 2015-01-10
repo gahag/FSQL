@@ -24,7 +24,7 @@ select name from dir inner join dir on date
 ## Installation
 
 FSQL comes as a single executable file, that can be downloaded from the
-[releases page](releases)
+[releases page](https://github.com/gahag/FSQL/releases)
 
 ## License
 
