@@ -23,6 +23,8 @@ CheckDirs =  [ -d "$(BinDir)" ] || mkdir "$(BinDir)" ;\
              [ -d "$(ObjDir)$(OptFlag)" ] || mkdir "$(ObjDir)$(OptFlag)"
 
 
+MainSrc = src/Main.hs
+             
 BinDir = Build/Bin/
 ObjDir = Build/Obj
 
@@ -31,18 +33,23 @@ SrcDir = src/
 OutputFile = $(BinDir)fsql
 
 
-all :
+.PHONY: clean all dyn opt
+
+clean :
+	rm -rf $(ObjDir) $(ObjDir)$(DynFlag) $(ObjDir)$(OptFlag)
+
+all : $(SrcDir) clean
 	$(CheckDirs)
-	$(Build) $(ObjFlag) $(Include) $(OutFlag) src/Main.hs
+	$(Build) $(ObjFlag) $(Include) $(OutFlag) $(MainSrc)
 
 
-dyn : $(LibDir)
+dyn : $(SrcDir) clean
 	$(CheckDirs)
-	$(Build) $(DynFlag) $(ObjFlag)$(DynFlag) $(Include) $(OutFlag)$(DynFlag) src/Main.hs
+	$(Build) $(DynFlag) $(ObjFlag)$(DynFlag) $(Include) $(OutFlag)$(DynFlag) $(MainSrc)
+	$(Strip) $(OutputFile)$(DynFlag)
 
-opt :
+opt : $(SrcDir) clean
 	$(CheckDirs)
-	$(Build) $(OptFlag) $(ObjFlag)$(OptFlag) $(Include) $(OutFlag)$(OptFlag) src/Main.hs
+	$(Build) $(OptFlag) $(ObjFlag)$(OptFlag) $(Include) $(OutFlag)$(OptFlag) $(MainSrc)
 	$(Strip) $(OutputFile)$(OptFlag)
 	$(Pack)  $(OutputFile)$(OptFlag)
-	
