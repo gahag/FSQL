@@ -18,11 +18,12 @@ module Parser.Lang where
   
   import Text.Parsec                          ((<|>), (<?>), noneOf)
   import Text.Parsec.Language                 (emptyDef)
-  import qualified Text.Parsec.Token as Token (identLetter, identStart
-                                              , identifier, makeTokenParser
-                                              , parens, reserved, reservedNames
+  import qualified Text.Parsec.Token as Token (commaSep1, identLetter
+                                              , identStart, identifier
+                                              , makeTokenParser, parens
+                                              , reserved, reservedNames
                                               , reservedOp, reservedOpNames
-                                              , stringLiteral, whiteSpace)
+                                              , stringLiteral, whiteSpace   )
   
   import Query (Selection(..), Join(..))
   import Expr  (Expr(..), Value(..), BooleanOp(..), RelationalOp(..))
@@ -30,8 +31,8 @@ module Parser.Lang where
   
   
   fsql_langDef = emptyDef {
-      Token.identStart      = noneOf "\" '!<>&|=()"
-    , Token.identLetter     = noneOf "\" '!<>&|=()"
+      Token.identStart      = noneOf fsql_invalidCs
+    , Token.identLetter     = noneOf fsql_invalidCs
     
     , Token.reservedNames   = [ "select", "from", "inner", "outer", "left",
                                 "right", "full", "join", "on", "where",
@@ -44,6 +45,7 @@ module Parser.Lang where
   
   fsql_lexer = Token.makeTokenParser fsql_langDef
   
+  commaSep1  = Token.commaSep1     fsql_lexer
   ident      = Token.identifier    fsql_lexer
   parens     = Token.parens        fsql_lexer
   reserved   = Token.reserved      fsql_lexer
@@ -54,10 +56,15 @@ module Parser.Lang where
   fsql_ident = ident <|> string
   
   
+  fsql_invalidCs = "\" '!<>&|=(),"
+  
+  
   fsql_selection =  (reserved "name" $> Name)
                 <|> (reserved "date" $> Date)
                 <|> (reserved "size" $> Size)
                 <?> "selection identifier (name|date|size)"
+  
+  fsql_selections = commaSep1 fsql_selection
   
   fsql_val s = case s of
                 Name -> return . RawVal
@@ -77,7 +84,6 @@ module Parser.Lang where
   fsql_andOp = reservedOp "&&" $> BoolOp And
   fsql_notOp = reservedOp "!"  $> Not
   fsql_orOp  = reservedOp "||" $> BoolOp Or
-  
   
   fsql_relOp = foldr ((<|>) . uncurry ($>) . (first reservedOp)) mzero
     [ ("==", Equal  )

@@ -66,7 +66,7 @@ module Expr where
                        Date -> op_on (fromDay  *** date)
                        Size -> op_on (fromSize *** size)
       
-      op_on selector val = uncurry (relOp_to_op op) . (curry selector) val
+      op_on selector v = uncurry (flip $ relOp_to_op op) . (curry selector) v
   -- ---------------------------------------------------------------------------
   
   

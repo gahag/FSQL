@@ -17,7 +17,8 @@ module Query where
   import Control.Applicative ((<$>), (<*>))
   import Control.Arrow       ((&&&))
   import Data.Function       (on)
-  import Data.List           ((\\), sort, deleteFirstsBy, intersectBy, unionBy)
+  import Data.List           ((\\), intercalate, sort
+                              , deleteFirstsBy, intersectBy, unionBy)
 
   import System.Directory (doesDirectoryExist, getDirectoryContents)
   import System.FilePath  ((</>))
@@ -28,7 +29,7 @@ module Query where
   
   
   
-  data Query = Query Selection Source (Maybe Predicate)
+  data Query = Query [Selection] Source (Maybe Predicate)
   
   data Selection = Name
                  | Date
@@ -56,8 +57,8 @@ module Query where
   fetch_query :: Query -> EitherT String IO [String]
   fetch_query (Query sel source pred) = (<$> fetch_source source) $
     sort . case pred of
-            Nothing -> map (selector sel)
-            Just p  -> flip foldr [] $ \ x -> if p x then (selector sel x :)
+            Nothing -> map (selectors sel)
+            Just p  -> flip foldr [] $ \ x -> if p x then (selectors sel x :)
                                                      else id
   
   
@@ -89,10 +90,12 @@ module Query where
                  Outer -> \ f x x' -> joiner Left f x x' ++ joiner Right f x x'
                  Full  -> unionBy
   
-  selector :: Selection -> (FileInfo -> String)
-  selector = \case Name -> name
-                   Date -> show . date
-                   Size -> show . size
+  selectors :: [Selection] -> (FileInfo -> String)
+  selectors sels fi = intercalate "\t" $ map (flip selector fi) sels
+    where
+      selector = \case Name -> name
+                       Date -> show . date
+                       Size -> show . size
   
   eq_on_sel :: Selection -> (FileInfo -> FileInfo -> Bool)
   eq_on_sel = \case Name -> (==) `on` name

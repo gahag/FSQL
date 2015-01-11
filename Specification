@@ -13,6 +13,10 @@ FSQL - File System Query Language
 FSQL is a tool for performing queries on the local filesystem
 with syntax similar to SQL.
 
+Any filepath/filename containing one of the characters
+" '!<>&|=(),
+must be quoted with double quotes. Double quotes inside
+quoted identifiers must me escaped with backslash(\).
 
 Data keywords:
 name : file name
@@ -24,19 +28,21 @@ The complete FSLQ grammar:
             | <char><chars>
 
   
-  <identifier> ::= <chars> !! none of < " '!<>&|=() >
+  <identifier> ::= <chars> !! none of < " '!<>&|=(), >
   <string>     ::= "<chars>"
   <ident>      ::= <identifier>
                  | <string>
 
-  <selection> ::= name | date | size
-  <join_type> ::= left | full | inner | outer | right
+  <selection>  ::= name | date | size
+  <selections> ::= <selection> , <selections>
+                 | <selection>
+  <join_type>  ::= left | full | inner | outer | right
 
   <not_op>  ::= !
   <bool_op> ::= && | ||
   <rel_op>  ::= == | != | <= | >= | < | > 
 
-  <select> ::= select <selection>
+  <select> ::= select <selections>
 
   <source> ::= from <ident>
              | from <ident> <join_type> join <ident> on <selection>
@@ -62,3 +68,6 @@ Examples:
 
   Standard inner join clause
     select name from dir inner join dir' on date
+  
+  Multiple selections
+    select name, date from dir

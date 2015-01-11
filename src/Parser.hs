@@ -19,8 +19,8 @@ module Parser where
   import Query        (Query(..), Source(..))
   import Expr         (expr_to_Pred)
   import Parser.Expr  (fsql_expr)
-  import Parser.Lang  (fsql_ident, fsql_joinType, fsql_selection, parens
-                      , reserved, whiteSpace)
+  import Parser.Lang  (fsql_ident, fsql_joinType, fsql_selection
+                      , fsql_selections, parens, reserved, whiteSpace)
   
   
   
@@ -31,7 +31,7 @@ module Parser where
   
   
   fsql_select = reserved "select"
-            *>  fsql_selection
+            *>  fsql_selections
             <?> "select statement"
   
   fsql_source = (\ s -> maybe (Single s) ($ s))
