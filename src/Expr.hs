@@ -11,10 +11,10 @@
 
 module Expr where
   
-  import Control.Arrow        ((***), (&&&))
+  import Control.Arrow  ((***), (&&&))
   
   import Query    (Selection(..), Predicate)
-  import FileInfo (Day, FileOffset, FileInfo, name, date, size)
+  import FileInfo (Day, FileOffset, name, date, size)
   
   
   

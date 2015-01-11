@@ -13,8 +13,7 @@ module Parser where
   
   import Control.Applicative  ((<$>), (<*>), (*>), (<*))
   
-  import Text.Parsec      ((<|>), (<?>), between, eof, optionMaybe, parse)
-  import Text.Parsec.Expr (buildExpressionParser)
+  import Text.Parsec      ((<?>), between, eof, optionMaybe, parse)
   
   import Query        (Query(..), Source(..))
   import Expr         (expr_to_Pred)
@@ -38,6 +37,7 @@ module Parser where
                   <$>(reserved "from"
                   *>  fsql_ident)
                   <*> optionMaybe fsql_join
+                  <?> "from statement"
   
   fsql_join = (\ j s sel s' -> Join j (s', s) sel)
                 <$> fsql_joinType     -- join type
@@ -50,9 +50,11 @@ module Parser where
   fsql_where = expr_to_Pred
                 <$>(reserved "where"
                 *>  fsql_expr)
+                <?> "where statement"
   
 
   fsql = Query
           <$> fsql_select
           <*> fsql_source
           <*> optionMaybe fsql_where
+          <?> "query statement"

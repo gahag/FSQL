@@ -15,7 +15,6 @@ module Query where
   import qualified Prelude as P (Either(..))
 
   import Control.Applicative ((<$>), (<*>))
-  import Control.Arrow       ((&&&))
   import Data.Function       (on)
   import Data.List           ((\\), intercalate, sort
                               , deleteFirstsBy, intersectBy, unionBy)
