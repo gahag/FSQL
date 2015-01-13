@@ -35,12 +35,12 @@ module Parser.Lang where
       Token.identStart      = noneOf fsql_ident_invalidCs
     , Token.identLetter     = noneOf fsql_ident_invalidCs
     
-    , Token.reservedNames   = [ "select", "from", "inner", "outer", "left",
-                                "right", "full", "join", "on", "where",
-                                "name", "date", "size"                      ]
+    , Token.reservedNames   = [ "select", "from", "inner", "outer", "left"
+                              , "right", "full", "join", "on", "where"
+                              , "name", "date", "size"                    ]
     
-    , Token.reservedOpNames = [ "<", ">", "<=", ">=", "==", "!=", "&&", "||",
-                                "!"                                           ]
+    , Token.reservedOpNames = [ "<", ">", "<=", ">=", "==", "!=", "&&", "||"
+                              , "!"                                         ]
   }  
   
   -- fsql_ident_invalidCs : all the operator chars, quotation chars, parenthesis
