@@ -42,6 +42,7 @@ module Query where
             | Outer
             | Full
   
+  --   Predicate : Takes the FileInfo and returns if it should be filtered.
   type Predicate = FileInfo -> Bool
   
   
@@ -65,7 +66,7 @@ module Query where
 
   fetch_source (Single s) = liftIO (doesDirectoryExist s) >>=
     \case False -> throwE ("Error: Directory \"" ++ s ++ "\" not found!")
-          True  -> liftIO $ (\\ [".", ".."])
+          True  -> liftIO $ (\\ [".", ".."]) -- remove '.' and '..'
                               <$> getDirectoryContents s
                               >>= mapM (getFileInfo s)
 
@@ -80,6 +81,7 @@ module Query where
   
   
   joiner :: Join -> (a -> a -> Bool) -> ([a] -> [a] -> [a])
+  -- Returns a function to make the join based on a equality comparer.
   joiner = \case Inner -> intersectBy
                  Left  -> deleteFirstsBy
                  Right -> flip . deleteFirstsBy
@@ -87,6 +89,8 @@ module Query where
                  Full  -> unionBy
   
   selectors :: [Selection] -> (FileInfo -> String)
+  -- Returns a function that extracts the selection info from the FileInfo.
+  -- The selections are separated by a tab, and their order is maintained.
   selectors sels fi = intercalate "\t" $ map (flip selector fi) sels
     where
       selector = \case Name -> name

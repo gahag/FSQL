@@ -7,8 +7,6 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-{-# LANGUAGE LambdaCase #-}
-
 module Parser where
   
   import Control.Applicative  ((<$>), (<*>), (*>), (<*))
@@ -35,14 +33,14 @@ module Parser where
   
   fsql_source = (\ s -> maybe (Single s) ($ s))
                   <$>(reserved "from"
-                  *>  fsql_ident)
+                  *>  fsql_ident) -- source (directory)
                   <*> optionMaybe fsql_join
                   <?> "from statement"
   
   fsql_join = (\ j s sel s' -> Join j (s', s) sel)
                 <$> fsql_joinType     -- join type
                 <*  reserved "join"
-                <*> fsql_ident        -- source
+                <*> fsql_ident        -- source (directory)
                 <*  reserved "on"
                 <*> fsql_selection    -- join selection
                 <?> "join statement"

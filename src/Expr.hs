@@ -37,19 +37,6 @@ module Expr where
                     | GreatEq
   
   
-  instance Show BooleanOp where
-    show = \case And -> "&&"
-                 Or  -> "||"
-  
-  instance Show RelationalOp where
-    show = \case Less    -> "<"
-                 Greater -> ">"
-                 Equal   -> "=="
-                 NotEq   -> "!="
-                 LessEq  -> "<="
-                 GreatEq -> ">="
-  
-  
   
   -- expr_to_Pred --------------------------------------------------------------
   expr_to_Pred :: Expr -> Predicate

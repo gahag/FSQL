@@ -7,11 +7,12 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-{-# LANGUAGE LambdaCase, ViewPatterns #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
   
-  import Control.Monad.Trans.Except (runExceptT)
+  import Control.Arrow              (left)
+  import Control.Monad.Trans.Except (ExceptT(..), runExceptT, withExceptT)
   import Data.Char                  (isSpace)
 
   import System.IO          (hFlush, stdout)
@@ -30,15 +31,15 @@ module Main where
       \Double quotes also must be escaped with backslash." ]
 
   main = getArgs >>= \case []   -> putStr usage >> command_loop
-                           args -> parse_fetch_query (unwords args)
+                           args -> fetch_fsql . parse_fsql $ unwords args
     where
-      putStrLn'  = putStrLn  . (++ "\n")
-      print_err  = putStrLn' . show
+      putStrLn' = putStrLn  . (++ "\n")
       
+      -- lexeme : checks if a string equals to the especified lexeme.
       lexeme l s | [(l', s')] <- lex s =  l == l'  &&  all isSpace s'
                  | otherwise =  False
       
-      parse_fetch_query = either print_err do_query . parse_fsql
+      fetch_fsql = either (putStrLn' . show) do_query
       do_query q = runExceptT (fetch_query q)
                >>= either putStrLn' (putStrLn . unlines)
       
@@ -48,4 +49,5 @@ module Main where
            s <- getLine
            if lexeme "exit" s || lexeme "quit" s
             then return ()
-            else parse_fetch_query s >> command_loop
+            else fetch_fsql (parse_fsql s)
+              >> command_loop

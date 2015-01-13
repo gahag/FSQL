@@ -16,8 +16,9 @@ module Parser.Lang where
   import Data.Functor   (($>))
   import Text.Read      (readMaybe)
   
-  import Text.Parsec                          ((<|>), (<?>), noneOf)
-  import Text.Parsec.Language                 (emptyDef)
+  import Text.Parsec          ((<|>), (<?>), noneOf)
+  import Text.Parsec.Language (emptyDef)
+  import Text.Parsec.Expr     (Operator(Prefix, Infix), Assoc(AssocRight))
   import qualified Text.Parsec.Token as Token (commaSep1, identLetter
                                               , identStart, identifier
                                               , makeTokenParser, parens
@@ -31,8 +32,8 @@ module Parser.Lang where
   
   
   fsql_langDef = emptyDef {
-      Token.identStart      = noneOf fsql_invalidCs
-    , Token.identLetter     = noneOf fsql_invalidCs
+      Token.identStart      = noneOf fsql_ident_invalidCs
+    , Token.identLetter     = noneOf fsql_ident_invalidCs
     
     , Token.reservedNames   = [ "select", "from", "inner", "outer", "left",
                                 "right", "full", "join", "on", "where",
@@ -42,6 +43,8 @@ module Parser.Lang where
                                 "!"                                           ]
   }  
   
+  fsql_ident_invalidCs = "\" '!<>&|=(),"
+
   
   fsql_lexer = Token.makeTokenParser fsql_langDef
   
@@ -55,10 +58,7 @@ module Parser.Lang where
   
   fsql_ident = ident <|> string
   
-  
-  fsql_invalidCs = "\" '!<>&|=(),"
-  
-  
+
   fsql_selection =  (reserved "name" $> Name)
                 <|> (reserved "date" $> Date)
                 <|> (reserved "size" $> Size)
@@ -81,9 +81,9 @@ module Parser.Lang where
                <?> "join type (inner|outer|left|right|full)"
   
   
-  fsql_andOp = reservedOp "&&" $> BoolOp And
-  fsql_notOp = reservedOp "!"  $> Not
-  fsql_orOp  = reservedOp "||" $> BoolOp Or
+  fsql_boolOps = [ [Prefix (reservedOp "!"  $> Not)]
+                 , [Infix  (reservedOp "&&" $> BoolOp And) AssocRight]
+                 , [Infix  (reservedOp "||" $> BoolOp Or ) AssocRight] ]
   
   fsql_relOp = foldr ((<|>) . uncurry ($>) . (first reservedOp)) mzero
     [ ("==", Equal  )

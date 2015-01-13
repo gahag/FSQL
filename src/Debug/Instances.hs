@@ -16,7 +16,7 @@ module Debug.Instances where
   import qualified Prelude as P (Either(..))
   
   import Query  (Query(..), Selection(..), Source(..), Join(..), Predicate)
-  import Expr   (Expr(..), Value(..))
+  import Expr   (Expr(..), Value(..), BooleanOp(..), RelationalOp(..))
   
   
   
@@ -33,6 +33,18 @@ module Debug.Instances where
   instance Show (P.Either Value Selection) where
     show = either show show
   
+  instance Show BooleanOp where
+    show = \case And -> "&&"
+                 Or  -> "||"
+  
+  instance Show RelationalOp where
+    show = \case Less    -> "<"
+                 Greater -> ">"
+                 Equal   -> "=="
+                 NotEq   -> "!="
+                 LessEq  -> "<="
+                 GreatEq -> ">="
+
   instance Show Query where
     show (Query s s' p) = concat ["Query ", show s, " ", show s' , " ", show p]
   
