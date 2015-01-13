@@ -11,12 +11,11 @@
 
 module Main where
   
-  import Data.Char  (isSpace)
+  import Control.Monad.Trans.Except (runExceptT)
+  import Data.Char                  (isSpace)
 
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
-
-  import Control.Monad.Trans.Either (eitherT)
   
   import Query  (fetch_query)
   import Parser (parse_fsql)
@@ -31,22 +30,22 @@ module Main where
       \Double quotes also must be escaped with backslash." ]
 
   main = getArgs >>= \case []   -> putStr usage >> command_loop
-                           args -> either print_err (print_query . fetch_query)
-                                   $ parse_fsql (unwords args)
+                           args -> parse_fetch_query (unwords args)
     where
-      flushStr s = putStr s >> hFlush stdout
-      putStrLn'  = putStrLn . (++ "\n")
-
-      print_query = eitherT putStrLn' (putStrLn . unlines)
-      print_err   = putStrLn' . show
+      putStrLn'  = putStrLn  . (++ "\n")
+      print_err  = putStrLn' . show
       
-      lexeme l (lex -> [(l', s)]) =  l == l'  &&  all isSpace s
-      lexeme _ _ = False
+      lexeme l s | [(l', s')] <- lex s =  l == l'  &&  all isSpace s'
+                 | otherwise =  False
+      
+      parse_fetch_query = either print_err do_query . parse_fsql
+      do_query q = runExceptT (fetch_query q)
+               >>= either putStrLn' (putStrLn . unlines)
+      
       
       command_loop =
-        do flushStr "fsql> "
+        do putStr "fsql> " >> hFlush stdout
            s <- getLine
-           if lexeme "exit" s  ||  lexeme "quit" s
+           if lexeme "exit" s || lexeme "quit" s
             then return ()
-            else either print_err (print_query . fetch_query) (parse_fsql s)
-                  >> command_loop
+            else parse_fetch_query s >> command_loop

@@ -12,18 +12,17 @@
 module Query where
   
   import Prelude hiding (Either(..))
-  import qualified Prelude as P (Either(..))
-
-  import Control.Applicative ((<$>), (<*>))
-  import Data.Function       (on)
-  import Data.List           ((\\), intercalate, sort
-                              , deleteFirstsBy, intersectBy, unionBy)
-
+  
+  import Control.Applicative        ((<$>), (<*>))
+  import Control.Monad.IO.Class     (liftIO)
+  import Control.Monad.Trans.Except (ExceptT, throwE)
+  import Data.Function              (on)
+  import Data.List                  ((\\), intercalate, sort
+                                    , deleteFirstsBy, intersectBy, unionBy)
+  
   import System.Directory (doesDirectoryExist, getDirectoryContents)
   import System.FilePath  ((</>))
   
-  import Control.Monad.Trans.Either (EitherT(..))
-
   import FileInfo (FileInfo, getFileStatus, name, date, size)
   
   
@@ -53,7 +52,7 @@ module Query where
   
   
   
-  fetch_query :: Query -> EitherT String IO [String]
+  fetch_query :: Query -> ExceptT String IO [String]
   fetch_query (Query sel source pred) = (<$> fetch_source source) $
     sort . case pred of
             Nothing -> map (selectors sel)
@@ -62,15 +61,13 @@ module Query where
   
   
   -- fetch_source --------------------------------------------------------------
-  fetch_source :: Source -> EitherT String IO [FileInfo]
+  fetch_source :: Source -> ExceptT String IO [FileInfo]
 
-  fetch_source (Single s) = EitherT $ doesDirectoryExist s >>=
-    \case False -> return . P.Left
-                    $ "Error: Directory \"" ++ s ++ "\" not found!"
-          
-          True  -> (\\ [".", ".."])
-                    <$> getDirectoryContents s
-                    >>= fmap P.Right . mapM (getFileInfo s)
+  fetch_source (Single s) = liftIO (doesDirectoryExist s) >>=
+    \case False -> throwE ("Error: Directory \"" ++ s ++ "\" not found!")
+          True  -> liftIO $ (\\ [".", ".."])
+                              <$> getDirectoryContents s
+                              >>= mapM (getFileInfo s)
 
   fetch_source (Join j (s, s') sel) = joiner j (eq_on_sel sel)
                                         <$> fetch_source (Single s)
