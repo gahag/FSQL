@@ -29,10 +29,12 @@ module Query where
   
   data Query = Query [Selection] Source (Maybe Predicate)
   
+  -- Selection : Represents the information to be extracted from a file.
   data Selection = Name
                  | Date
                  | Size
   
+  -- Source : Source directory for the query.
   data Source = Single FilePath
               | Join Join (FilePath, FilePath) Selection
   
@@ -68,16 +70,12 @@ module Query where
     \case False -> throwE ("Error: Directory \"" ++ s ++ "\" not found!")
           True  -> liftIO $ (\\ [".", ".."]) -- remove '.' and '..'
                               <$> getDirectoryContents s
-                              >>= mapM (getFileInfo s)
-
+                              >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))
+  
   fetch_source (Join j (s, s') sel) = joiner j (eq_on_sel sel)
                                         <$> fetch_source (Single s)
                                         <*> fetch_source (Single s')
   -- ---------------------------------------------------------------------------
-
-  
-  getFileInfo :: FilePath -> FilePath -> IO FileInfo
-  getFileInfo path name = (name,) <$> getFileStatus (path </> name)
   
   
   joiner :: Join -> (a -> a -> Bool) -> ([a] -> [a] -> [a])

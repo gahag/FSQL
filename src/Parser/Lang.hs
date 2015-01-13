@@ -43,6 +43,8 @@ module Parser.Lang where
                                 "!"                                           ]
   }  
   
+  -- fsql_ident_invalidCs : all the operator chars, quotation chars, parenthesis
+  -- whitespace and comma (comma is used as delimiter in `fsql_selections`).
   fsql_ident_invalidCs = "\" '!<>&|=(),"
 
   

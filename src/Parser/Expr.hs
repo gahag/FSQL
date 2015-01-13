@@ -22,13 +22,13 @@ module Parser.Expr where
     do sel <- fsql_selection
        op  <- fsql_relOp
        val <- fsql_ident >>= fsql_val sel
-       return (RelOp op sel val)  -- sel op val
+       return (RelOp op sel val)  -- `sel op val`
     <|>                           -- or
-    do val' <- fsql_ident         -- val op sel
+    do val' <- fsql_ident         -- `val op sel`
        op   <- fsql_relOp
        sel  <- fsql_selection
        val  <- fsql_val sel val'
-       return (RelOp (flip_relOp op) sel val)       
+       return (RelOp (flip_relOp op) sel val)
     <?> "relational expression"
   
   

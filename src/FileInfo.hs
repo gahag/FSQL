@@ -26,6 +26,8 @@ module FileInfo (
   
   
   
+  -- FileInfo : (filename, FileStatus)
+  -- Must keep the filename since the FileStatus can't provide it.
   type FileInfo = (String, FileStatus)
   
   

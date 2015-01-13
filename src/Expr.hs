@@ -19,7 +19,7 @@ module Expr where
   
   
   data Expr = Not Expr
-            | BoolOp BooleanOp    Expr     Expr
+            | BoolOp BooleanOp    Expr      Expr
             | RelOp  RelationalOp Selection Value
   
   data Value = RawVal  String
