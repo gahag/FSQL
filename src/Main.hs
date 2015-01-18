@@ -30,7 +30,7 @@ module Main where
       \commandline, as they may be interpreted as shell commands. \
       \Double quotes also must be escaped with backslash." ]
 
-  main = getArgs >>= \case []   -> putStr usage >> command_loop
+  main = getArgs >>= \case []   -> putStrLn usage >> command_loop
                            args -> fetch_fsql . parse_fsql $ unwords args
     where
       putStrLn' = putStrLn  . (++ "\n")
