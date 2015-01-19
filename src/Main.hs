@@ -11,9 +11,9 @@
 
 module Main where
   
-  import Control.Arrow              (left)
-  import Control.Monad.Trans.Except (ExceptT(..), runExceptT, withExceptT)
-  import Data.Char                  (isSpace)
+  import Control.Arrow        (left)
+  import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
+  import Data.Char            (isSpace)
 
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
@@ -29,15 +29,15 @@ module Main where
     , "Please note that where statements should be quoted in the \
       \commandline, as they may be interpreted as shell commands. \
       \Double quotes also must be escaped with backslash." ]
-
+  
   main = getArgs >>= \case []   -> putStrLn usage >> command_loop
                            args -> fetch_fsql . parse_fsql $ unwords args
     where
-      putStrLn' = putStrLn  . (++ "\n")
+      putStrLn' = putStrLn . (++ "\n")
       
       -- lexeme : checks if a string equals to the especified lexeme.
       lexeme l s | [(l', s')] <- lex s =  l == l'  &&  all isSpace s'
-                 | otherwise =  False
+                 | otherwise = False
       
       fetch_fsql = either (putStrLn' . show) do_query
       do_query q = runExceptT (fetch_query q)

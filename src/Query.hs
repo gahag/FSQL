@@ -13,12 +13,12 @@ module Query where
   
   import Prelude hiding (Either(..))
   
-  import Control.Applicative        ((<$>), (<*>))
-  import Control.Monad.IO.Class     (liftIO)
-  import Control.Monad.Trans.Except (ExceptT, throwE)
-  import Data.Function              (on)
-  import Data.List                  ((\\), intercalate, sort
-                                    , deleteFirstsBy, intersectBy, unionBy)
+  import Control.Applicative    ((<$>), (<*>))
+  import Control.Monad.Except   (ExceptT, throwError)
+  import Control.Monad.IO.Class (liftIO)
+  import Data.Function          (on)
+  import Data.List              ((\\), intercalate, sort
+                                , deleteFirstsBy, intersectBy, unionBy)
   
   import System.Directory (doesDirectoryExist, getDirectoryContents)
   import System.FilePath  ((</>))
@@ -67,7 +67,7 @@ module Query where
   fetch_source :: Source -> ExceptT String IO [FileInfo]
 
   fetch_source (Single s) = liftIO (doesDirectoryExist s) >>=
-    \case False -> throwE ("Error: Directory \"" ++ s ++ "\" not found!")
+    \case False -> throwError ("Error: Directory \"" ++ s ++ "\" not found!")
           True  -> liftIO $ (\\ [".", ".."]) -- remove '.' and '..'
                               <$> getDirectoryContents s
                               >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))

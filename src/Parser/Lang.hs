@@ -58,9 +58,9 @@ module Parser.Lang where
   string     = Token.stringLiteral fsql_lexer
   whiteSpace = Token.whiteSpace    fsql_lexer
   
+
   fsql_ident = ident <|> string
   
-
   fsql_selection =  (reserved "name" $> Name)
                 <|> (reserved "date" $> Date)
                 <|> (reserved "size" $> Size)
@@ -74,7 +74,7 @@ module Parser.Lang where
                 Size -> parseVal SizeVal
     where
       parseVal f = maybe (fail $ "invalid " ++ show s) (return . f) . readMaybe
-
+  
   fsql_joinType =  (reserved "inner" $> Inner)
                <|> (reserved "outer" $> Outer)
                <|> (reserved "left"  $> Left )

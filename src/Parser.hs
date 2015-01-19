@@ -38,11 +38,11 @@ module Parser where
                   <?> "from statement"
   
   fsql_join = (\ j s sel s' -> Join j (s', s) sel)
-                <$> fsql_joinType     -- join type
+                <$> fsql_joinType   -- join type
                 <*  reserved "join"
-                <*> fsql_ident        -- source (directory)
+                <*> fsql_ident      -- source (directory)
                 <*  reserved "on"
-                <*> fsql_selection    -- join selection
+                <*> fsql_selection  -- join selection
                 <?> "join statement"
   
   fsql_where = expr_to_Pred
