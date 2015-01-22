@@ -31,7 +31,8 @@ module Main where
       \Double quotes also must be escaped with backslash." ]
   
   main = getArgs >>= \case []   -> putStrLn usage >> command_loop
-                           args -> fetch_fsql . parse_fsql $ unwords args
+                           args -> fetch_fsql . parse_fsql "command line"
+                                                          $ unwords args
     where
       putStrLn' = putStrLn . (++ "\n")
       
@@ -40,6 +41,7 @@ module Main where
                  | otherwise = False
       
       fetch_fsql = either (putStrLn' . show) do_query
+      
       do_query q = runExceptT (fetch_query q)
                >>= either putStrLn' (putStrLn . unlines)
       
@@ -49,5 +51,5 @@ module Main where
            s <- getLine
            if lexeme "exit" s || lexeme "quit" s
             then return ()
-            else fetch_fsql (parse_fsql s)
+            else fetch_fsql (parse_fsql "interactive" s)
               >> command_loop

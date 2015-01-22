@@ -21,7 +21,7 @@ module Parser where
   
   
   
-  parse_fsql = parse fsql_parser []
+  parse_fsql = parse fsql_parser
   
   fsql_parser = fsql `between'` whiteSpace $ eof
     where between' p open close = between open close p
@@ -37,7 +37,8 @@ module Parser where
                   <*> optionMaybe fsql_join
                   <?> "from statement"
   
-  fsql_join = (\ j s sel s' -> Join j (s', s) sel)
+  fsql_join = (\ j s sel s' -> Join j (s', s) sel) -- See fsql_source.
+           -- Swap s and s' because s' is the first source, and s is the second.
                 <$> fsql_joinType   -- join type
                 <*  reserved "join"
                 <*> fsql_ident      -- source (directory)

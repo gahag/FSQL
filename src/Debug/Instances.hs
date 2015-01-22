@@ -13,7 +13,6 @@
 module Debug.Instances where
   
   import Prelude hiding (Either(..))
-  import qualified Prelude as P (Either(..))
   
   import Query  (Query(..), Selection(..), Source(..), Join(..), Predicate)
   import Expr   (Expr(..), Value(..), BooleanOp(..), RelationalOp(..))
@@ -30,9 +29,6 @@ module Debug.Instances where
                  DayVal  d -> show d
                  SizeVal s -> show s
   
-  instance Show (P.Either Value Selection) where
-    show = either show show
-  
   instance Show BooleanOp where
     show = \case And -> "&&"
                  Or  -> "||"
@@ -46,18 +42,18 @@ module Debug.Instances where
                  GreatEq -> ">="
 
   instance Show Query where
-    show (Query s s' p) = concat ["Query ", show s, " ", show s' , " ", show p]
+    show (Query s s' p) = concat ["query ", show s, " ", show s' , " ", show p]
   
   instance Show Source where
     show (Single s)     = show s
-    show (Join j s sel) = concat [show j, " Join ", show s, " On ", show sel]
+    show (Join j s sel) = concat [show j, " join ", show s, " on ", show sel]
   
   instance Show Join where
-    show = \case Inner -> "Inner"
-                 Outer -> "Outer"
-                 Left  -> "Left"
-                 Right -> "Right"
-                 Full  -> "Full"
+    show = \case Inner -> "inner"
+                 Outer -> "outer"
+                 Left  -> "left"
+                 Right -> "right"
+                 Full  -> "full"
   
   instance Show Predicate where
     show = const "Predicate"
