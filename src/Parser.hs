@@ -9,9 +9,9 @@
 
 module Parser where
   
-  import Control.Applicative  ((<$>), (<*>), (*>), (<*))
+  import Control.Applicative  ((<$>), (<*>), (<*), (*>))
   
-  import Text.Parsec      ((<?>), between, eof, optionMaybe, parse)
+  import Text.Parsec  ((<?>), between, eof, optionMaybe, parse)
   
   import Query        (Query(..), Source(..))
   import Expr         (expr_to_Pred)
