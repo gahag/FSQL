@@ -45,8 +45,13 @@ module Debug.Instances where
     show (Query s s' p) = concat ["query ", show s, " ", show s' , " ", show p]
   
   instance Show Source where
-    show (Single s)     = show s
-    show (Join j s sel) = concat [show j, " join ", show s, " on ", show sel]
+    show = \case (Single s rec)     -> show_rec rec (show s)
+                 (Join j s sel rec) -> show_rec rec $
+                                        concat [show j, " join ", show s, " on "
+                                               , show sel]
+      where
+        show_rec rec | rec       = ("recursive " ++)
+                     | otherwise = id
   
   instance Show Join where
     show = \case Inner -> "inner"

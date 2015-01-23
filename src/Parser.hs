@@ -16,7 +16,7 @@ module Parser where
   import Query        (Query(..), Source(..))
   import Expr         (expr_to_Pred)
   import Parser.Expr  (fsql_expr)
-  import Parser.Lang  (fsql_ident, fsql_joinType, fsql_selection
+  import Parser.Lang  (fsql_ident, fsql_joinType, fsql_recursive, fsql_selection
                       , fsql_selections, parens, reserved, whiteSpace)
   
   
@@ -31,13 +31,14 @@ module Parser where
             *>  fsql_selections
             <?> "select statement"
   
-  fsql_source = (\ s -> maybe (Single s) ($ s))
-                  <$>(reserved "from"
-                  *>  fsql_ident) -- source (directory)
+  fsql_source = (\ rec s -> maybe (Single s rec) $ flip uncurry (s, rec))
+                  <$> fsql_recursive
+                  <*  reserved "from"
+                  <*> fsql_ident -- source (directory)
                   <*> optionMaybe fsql_join
                   <?> "from statement"
   
-  fsql_join = (\ j s sel s' -> Join j (s', s) sel) -- See fsql_source.
+  fsql_join = (\ j s' sel s -> Join j (s, s') sel) -- See fsql_source.
            -- Swap s and s' because s' is the first source, and s is the second.
                 <$> fsql_joinType   -- join type
                 <*  reserved "join"

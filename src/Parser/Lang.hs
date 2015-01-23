@@ -14,10 +14,10 @@ module Parser.Lang where
   
   import Control.Arrow  (first)
   import Control.Monad  (mzero)
-  import Data.Functor   (($>))
+  import Data.Functor   ((<$>), ($>))
   import Text.Read      (readMaybe)
   
-  import Text.Parsec          ((<|>), (<?>), noneOf)
+  import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)
   import Text.Parsec.Language (emptyDef)
   import Text.Parsec.Expr     (Operator(Prefix, Infix), Assoc(AssocRight))
   import qualified Text.Parsec.Token as Token (commaSep1, identLetter
@@ -59,7 +59,7 @@ module Parser.Lang where
   string     = Token.stringLiteral fsql_lexer
   whiteSpace = Token.whiteSpace    fsql_lexer
   
-
+  
   fsql_ident = ident <|> string
   
   fsql_selection =  (reserved "name" $> Name)
@@ -75,6 +75,9 @@ module Parser.Lang where
                 Size -> parseVal SizeVal
     where
       parseVal f = maybe (fail $ "invalid " ++ show s) (return . f) . readMaybe
+  
+  fsql_recursive = (/= Nothing)
+                    <$> optionMaybe (reserved "recursive")
   
   fsql_joinType =  (reserved "inner" $> Inner)
                <|> (reserved "outer" $> Outer)

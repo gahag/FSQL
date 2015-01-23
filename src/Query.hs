@@ -35,8 +35,10 @@ module Query where
                  | Size
   
   -- Source : Source directory for the query.
-  data Source = Single FilePath
-              | Join Join (FilePath, FilePath) Selection
+  data Source = Single FilePath Recurse
+              | Join Join (FilePath, FilePath) Selection Recurse
+  
+  type Recurse = Bool
   
   data Join = Inner
             | Left 
@@ -64,17 +66,40 @@ module Query where
   
   
   -- fetch_source --------------------------------------------------------------
+  -- TODO RECURSION
   fetch_source :: Source -> ExceptT String IO [FileInfo]
 
-  fetch_source (Single s) = liftIO (doesDirectoryExist s) >>=
+  fetch_source (Single s rec) = liftIO (doesDirectoryExist s) >>=
     \case False -> throwError ("Error: Directory \"" ++ s ++ "\" not found!")
-          True  -> liftIO $ (\\ [".", ".."]) -- remove '.' and '..'
-                              <$> getDirectoryContents s
+          True  -> liftIO $ fetch_files s
                               >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))
+    where
+      fetch_files = if rec then getDirContentsRec
+                           else getDirContents
+      
+      getDirContents dir = (\\ [".", ".."]) -- remove '.' and '..'
+                            <$> getDirectoryContents dir
+      
+      getDirContentsRec dir =
+        do contents <- getDirContents dir
+           paths <- (`mapM` contents) $
+                        \ name -> do isDir <- doesDirectoryExist (dir </> name)
+                                     if isDir then getDirContentsRec' dir name
+                                              else return [name]
+           return (concat paths)
+      
+      getDirContentsRec' root dir =
+        do contents <- getDirContents (root </> dir)
+           paths <- (`mapM` contents) $
+                        \ name -> let path = dir </> name in
+                                  do isDir <- doesDirectoryExist (root </> path)
+                                     if isDir then getDirContentsRec' root path
+                                              else return [path]
+           return (concat paths)
   
-  fetch_source (Join j (s, s') sel) = joiner j (eq_on_sel sel)
-                                        <$> fetch_source (Single s)
-                                        <*> fetch_source (Single s')
+  fetch_source (Join j (s, s') sel rec) = joiner j (eq_on_sel sel)
+                                            <$> fetch_source (Single s rec)
+                                            <*> fetch_source (Single s' rec)
   -- ---------------------------------------------------------------------------
   
   
@@ -89,7 +114,7 @@ module Query where
   selectors :: [Selection] -> (FileInfo -> String)
   -- Returns a function that extracts the selection info from the FileInfo.
   -- The selections are separated by a tab, and their order is maintained.
-  selectors sels fi = intercalate "\t" $ map (flip selector fi) sels
+  selectors sels fi = intercalate "\t" $ map (`selector` fi) sels
     where
       selector = \case Name -> name
                        Date -> show . date
