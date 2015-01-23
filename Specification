@@ -26,38 +26,46 @@ size : file size
 The complete FSLQ grammar:
   <chars> ::= <char>
             | <char><chars>
-
+  
   
   <identifier> ::= <chars> !! none of < " '!<>&|=(), >
   <string>     ::= "<chars>"
   <ident>      ::= <identifier>
                  | <string>
-
+  
   <selection>  ::= name | date | size
   <selections> ::= <selection> , <selections>
                  | <selection>
   <join_type>  ::= left | full | inner | outer | right
-
+  
   <not_op>  ::= !
   <bool_op> ::= && | ||
   <rel_op>  ::= == | != | <= | >= | < | > 
-
+  
   <select> ::= select <selections>
-
-  <source> ::= from <ident>
-             | from <ident> <join_type> join <ident> on <selection>
-
+  
+  <source> ::= <source_rec>
+             | <source_non_rec>
+  <source_rec>      ::= recursive <source_non_rec>
+  <source_non_rec>  ::= <source_simple> | <source_join>
+  <source_simple>   ::= from <ident>
+  <source_join>     ::= <source_simple> <join_type> join <ident> on <selection>
+  
   <where> ::= where <expr>
-
+  
   <expr> ::= (<expr>)
            | <not_op> <expr>
            | <rel_expr>
            | <expr> <bool_op> <expr>
-
+  
   <rel_expr> ::= <ident>     <rel_op> <selection>
                | <selection> <rel_op> <ident>
-
   
+  
+  <query> ::= <select> <source>
+            | <select> <source> <where>
+
+
 
 Examples:
   Standard select clause
