@@ -7,7 +7,9 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-module Parser where
+module Parser (
+    parse_fsql
+  ) where
   
   import Control.Applicative  ((<$>), (<*>), (<*), (*>))
   

@@ -7,7 +7,9 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-module Parser.Expr where 
+module Parser.Expr (
+    fsql_expr
+  ) where 
   
   import Text.Parsec      ((<|>), (<?>))
   import Text.Parsec.Expr (buildExpressionParser)
