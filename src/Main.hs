@@ -9,11 +9,15 @@
 
 {-# LANGUAGE LambdaCase #-}
 
-module Main where
+module Main (
+    main
+  ) where
   
   import Control.Arrow        (left)
   import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
   import Data.Char            (isSpace)
+  import Data.Function        (on)
+  import Data.List            (intercalate, maximumBy, transpose)
 
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
@@ -36,6 +40,13 @@ module Main where
     where
       putStrLn' = putStrLn . (++ "\n")
       
+      pad xs = let len = length . maximumBy (compare `on` length) $ xs
+                in map (\ x -> x ++ replicate (len - length x) ' ') xs
+      
+      print_cols = putStrLn . unlines . map (intercalate "\t")
+                    . transpose . map pad . transpose
+      
+      
       -- lexeme : checks if a string equals to the especified lexeme.
       lexeme l s | [(l', s')] <- lex s =  l == l'  &&  all isSpace s'
                  | otherwise = False
@@ -43,7 +54,7 @@ module Main where
       fetch_fsql = either (putStrLn' . show) do_query
       
       do_query q = runExceptT (fetch_query q)
-               >>= either putStrLn' (putStrLn . unlines)
+               >>= either putStrLn' print_cols
       
       
       command_loop =

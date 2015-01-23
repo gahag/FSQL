@@ -9,7 +9,10 @@
 
 {-# LANGUAGE LambdaCase, TupleSections #-}
 
-module Query where
+module Query (
+    Query(..), Selection(..), Source(..), Recurse, Join(..), Predicate,
+    fetch_query
+  ) where
   
   import Prelude hiding (Either(..))
   
@@ -17,13 +20,14 @@ module Query where
   import Control.Monad.Except   (ExceptT, throwError)
   import Control.Monad.IO.Class (liftIO)
   import Data.Function          (on)
-  import Data.List              ((\\), intercalate, sort
+  import Data.List              (intercalate, sort
                                 , deleteFirstsBy, intersectBy, unionBy)
   
-  import System.Directory (doesDirectoryExist, getDirectoryContents)
+  import System.Directory (doesDirectoryExist)
   import System.FilePath  ((</>))
   
-  import FileInfo (FileInfo, getFileStatus, name, date, size)
+  import FileInfo (FileInfo, getFileStatus, name, date, size
+                  , getDirContents, getDirContentsRec)
   
   
   
@@ -57,45 +61,23 @@ module Query where
   
   
   
-  fetch_query :: Query -> ExceptT String IO [String]
+  fetch_query :: Query -> ExceptT String IO [[String]]
   fetch_query (Query sel source pred) = (<$> fetch_source source) $
     sort . case pred of
             Nothing -> map (selectors sel)
             Just p  -> flip foldr [] $ \ x -> if p x then (selectors sel x :)
                                                      else id
   
-  
   -- fetch_source --------------------------------------------------------------
-  -- TODO RECURSION
   fetch_source :: Source -> ExceptT String IO [FileInfo]
 
   fetch_source (Single s rec) = liftIO (doesDirectoryExist s) >>=
     \case False -> throwError ("Error: Directory \"" ++ s ++ "\" not found!")
           True  -> liftIO $ fetch_files s
-                              >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))
+                        >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))
     where
       fetch_files = if rec then getDirContentsRec
-                           else getDirContents
-      
-      getDirContents dir = (\\ [".", ".."]) -- remove '.' and '..'
-                            <$> getDirectoryContents dir
-      
-      getDirContentsRec dir =
-        do contents <- getDirContents dir
-           paths <- (`mapM` contents) $
-                        \ name -> do isDir <- doesDirectoryExist (dir </> name)
-                                     if isDir then getDirContentsRec' dir name
-                                              else return [name]
-           return (concat paths)
-      
-      getDirContentsRec' root dir =
-        do contents <- getDirContents (root </> dir)
-           paths <- (`mapM` contents) $
-                        \ name -> let path = dir </> name in
-                                  do isDir <- doesDirectoryExist (root </> path)
-                                     if isDir then getDirContentsRec' root path
-                                              else return [path]
-           return (concat paths)
+                           else getDirContents  
   
   fetch_source (Join j (s, s') sel rec) = joiner j (eq_on_sel sel)
                                             <$> fetch_source (Single s rec)
@@ -111,10 +93,10 @@ module Query where
                  Outer -> \ f x x' -> joiner Left f x x' ++ joiner Right f x x'
                  Full  -> unionBy
   
-  selectors :: [Selection] -> (FileInfo -> String)
+  selectors :: [Selection] -> (FileInfo -> [String])
   -- Returns a function that extracts the selection info from the FileInfo.
   -- The selections are separated by a tab, and their order is maintained.
-  selectors sels fi = intercalate "\t" $ map (`selector` fi) sels
+  selectors sels fi = map (`selector` fi) sels
     where
       selector = \case Name -> name
                        Date -> show . date

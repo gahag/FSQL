@@ -7,10 +7,13 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module FileInfo (
     Day, FileStatus, FileOffset, FileInfo,
     getFileStatus,
-    name, date, size
+    name, date, size,
+    getDirContents, getDirContentsRec
   ) where
   
   import System.PosixCompat.Files (FileStatus, getFileStatus)
@@ -23,6 +26,13 @@ module FileInfo (
   -- Size
   import System.Posix.Types       (FileOffset)
   import System.PosixCompat.Files (fileSize)
+  
+  -- Directory Contents
+  import Data.Functor     ((<$>))
+  import Data.List        ((\\))
+  import System.Directory (doesDirectoryExist, getDirectoryContents)
+  import System.FilePath  ((</>))
+  
   
   
   
@@ -40,3 +50,26 @@ module FileInfo (
   
   size :: FileInfo -> FileOffset
   size = fileSize . snd
+  
+  
+  getDirContents dir = (\\ [".", ".."]) -- remove '.' and '..'
+                        <$> getDirectoryContents dir
+  
+  getDirContentsRec dir =
+    do contents <- getDirContents dir
+       paths <- (`mapM` contents) $
+                  \ name -> doesDirectoryExist (dir </> name)
+                        >>= \case True  -> getDirContentsRec' dir name
+                                  False -> return [name]
+       return (concat paths)
+    where
+      getDirContentsRec' root dir =
+        do contents <- getDirContents (root </> dir)
+           paths <- (`mapM` contents) $
+                      \ name -> let path = dir </> name in
+                                doesDirectoryExist (root </> path)
+                            >>= \case True  -> getDirContentsRec' root path
+                                      False -> return [path]
+           return $
+            if null contents then [dir]
+                             else concat paths
