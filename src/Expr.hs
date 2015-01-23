@@ -9,7 +9,10 @@
 
 {-# LANGUAGE LambdaCase #-}
 
-module Expr where
+module Expr (
+    Expr(..), Value(..), BooleanOp(..), RelationalOp(..),
+    expr_to_Pred, flip_relOp
+  ) where
   
   import Control.Arrow  ((***), (&&&))
   
@@ -54,8 +57,22 @@ module Expr where
                        Size -> op_on (fromSize *** size)
       
       op_on selector v = uncurry (flip $ relOp_to_op op) . (curry selector) v
+      
+      fromRaw  = \case RawVal  r -> r; _ -> invalid_val "fromRaw"
+      fromDay  = \case DayVal  d -> d; _ -> invalid_val "fromDay"
+      fromSize = \case SizeVal s -> s; _ -> invalid_val "fromSize"
+      
+      invalid_val fn = error $ "Expr." ++ fn ++ ": invalid value."
   -- ---------------------------------------------------------------------------
   
+  
+  flip_relOp :: RelationalOp -> RelationalOp
+  flip_relOp = \case Less    -> Greater
+                     Greater -> Less
+                     Equal   -> Equal
+                     NotEq   -> NotEq
+                     LessEq  -> GreatEq
+                     GreatEq -> LessEq
   
   boolOp_to_op :: BooleanOp -> (Bool -> Bool -> Bool)
   boolOp_to_op = \case And -> (&&)
@@ -68,20 +85,3 @@ module Expr where
                       NotEq   -> (/=)
                       LessEq  -> (<=)
                       GreatEq -> (>=)
-  
-  flip_relOp :: RelationalOp -> RelationalOp
-  flip_relOp = \case Less    -> Greater
-                     Greater -> Less
-                     Equal   -> Equal
-                     NotEq   -> NotEq
-                     LessEq  -> GreatEq
-                     GreatEq -> LessEq
-  
-  
-  fromRaw  :: Value -> String
-  fromDay  :: Value -> Day
-  fromSize :: Value -> FileOffset
-  
-  fromRaw  = \case RawVal  r -> r; _ -> error "Expr.fromRaw: Invalid Value."
-  fromDay  = \case DayVal  d -> d; _ -> error "Expr.fromDay: Invalid Value."
-  fromSize = \case SizeVal s -> s; _ -> error "Expr.fromSize: Invalid Value."
