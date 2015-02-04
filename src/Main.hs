@@ -43,7 +43,7 @@ module Main (
       pad xs = let len = length . maximumBy (compare `on` length) $ xs
                 in map (\ x -> x ++ replicate (len - length x) ' ') xs
       
-      print_cols = putStrLn . unlines . map (intercalate "\t")
+      print_cols = putStr . unlines . map (intercalate "\t")
                     . transpose . map pad . transpose
       
       

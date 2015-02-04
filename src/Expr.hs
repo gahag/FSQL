@@ -7,81 +7,182 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, TupleSections, RankNTypes #-}
 
 module Expr (
-    Expr(..), Value(..), BooleanOp(..), RelationalOp(..),
-    expr_to_Pred, flip_relOp
+    Expr(..), Atom(..), Value(..), Op(..),
+    TypeError(..), typecheck,
+    expr_to_Pred
   ) where
   
-  import Control.Arrow  ((***), (&&&))
+  import Control.Arrow        ((***), (&&&))
+  import Control.Applicative  ((<$>), (<*>))
+  import Control.Monad.Except (throwError)
+  import Text.Read            (readMaybe)
+  
+  import Text.Regex.TDFA  ((=~))
   
   import Query    (Selection(..), Predicate)
-  import FileInfo (Day, FileOffset, name, date, size)
+  import FileInfo (FileInfo, Day, FileOffset, name, date, size)
   
   
   
-  data Expr = Not Expr
-            | BoolOp BooleanOp    Expr      Expr
-            | RelOp  RelationalOp Selection Value
+  data Expr = Atom Atom
+            | Not Expr
+            | Op Op Expr Expr
   
-  data Value = RawVal  String
+  data Atom = Sel Selection
+            | Val Value
+  
+  data Value = UnparsedVal String
+             | StrVal  String
              | DayVal  Day
              | SizeVal FileOffset
   
-  data BooleanOp = And
-                 | Or
+  data Op = And
+          | Or
+          | Less
+          | Greater
+          | Equal
+          | NotEq
+          | LessEq
+          | GreatEq
+          | Like
   
-  data RelationalOp = Less
-                    | Greater
-                    | Equal
-                    | NotEq
-                    | LessEq
-                    | GreatEq
+  data TypeError = InvalidValue   String String -- Invalid Value -> Value type
+                 | UnexpectedType String String -- Unexpected    -> Expected
   
+  type TypeChecked = Either TypeError
+  
+  
+  instance Show Value where
+    show (UnparsedVal s) = error "Expr.Value.show: unparsed value"
+    show (StrVal s)  = s
+    show (DayVal d)  = show d
+    show (SizeVal s) = show s
+  
+  instance Show TypeError where
+    show (InvalidValue u e) = concat ["invalid ", e, ": ", u]
+    show (UnexpectedType u e) = concat ["unexpected ", u, ", expected ", e]
+  
+  
+  val     = Atom . Val
+  strVal  = val . StrVal
+  dayVal  = val . DayVal
+  sizeVal = val . SizeVal
+  
+  quote s = "'" ++ show s ++ "'"  
+  invalid_val = InvalidValue . quote
+  unexpected  = UnexpectedType
+  x `expected` s = throwError (x s)
+  
+  
+  -- typecheck -----------------------------------------------------------------
+  typecheck :: Expr -> TypeChecked Expr
+  
+  typecheck (Atom _) = unexpected "atom" `expected` "expression"
+  
+  typecheck (Not x) = Not <$> typecheck x
+  
+  typecheck (Op op x x') = (Op op `uncurry`)
+                        <$> case op of
+                              And     -> bool'bool'
+                              Or      -> bool'bool'
+                              Less    -> a'a'
+                              Greater -> a'a'
+                              Equal   -> a'a'
+                              NotEq   -> a'a'
+                              LessEq  -> a'a'
+                              GreatEq -> a'a'
+                              Like    -> name'strVal'
+    where
+      bool'bool' =
+        case (x, x') of
+          (Atom _, _) -> unexpected "atom" `expected` "expreesion"
+          (_, Atom _) -> unexpected "atom" `expected` "expreesion"
+          _           -> (,) <$> typecheck x <*> typecheck x'
+      
+      name'strVal'
+        | (Atom a, Atom a') <- (x, x')
+          = case (a, a') of
+              (Sel Name, Val (UnparsedVal s)) -> return (x, strVal s)
+              (Sel s, _) -> unexpected (quote s) `expected` "name"
+              (Val v, _) -> unexpected (quote v) `expected` "name"
+        | otherwise = unexpected "expression" `expected` "atom"
+      
+      a'a'
+        | (Atom a, Atom a') <- (x, x')
+          = case (a, a') of
+              (Sel s, Val v) -> (x,)  <$> parseVal s v
+              (Val v, Sel s) -> (,x') <$> parseVal s v
+              (Sel _, Sel _) -> unexpected "selection" `expected` "value"
+              (Val _, Val _) -> unexpected "value" `expected` "selection"
+        | otherwise = unexpected "expression" `expected` "atom"
+        where
+          parseVal sel (UnparsedVal str) =
+            let parse f   = maybe parse_err (return . f) . readMaybe
+                parse_err = invalid_val str `expected` (show sel ++ " value")
+            in
+              case sel of
+                Name -> parse strVal  str
+                Date -> parse dayVal  str
+                Size -> parse sizeVal str
+          
+          parseVal _ _ = error "Expr.typecheck.parseVal: not `UnparsedVal`"
+  -- ---------------------------------------------------------------------------
   
   
   -- expr_to_Pred --------------------------------------------------------------
   expr_to_Pred :: Expr -> Predicate
   
+  expr_to_Pred (Atom _) = error "Expr.expr_to_Pred: invalid expression"
+  
   expr_to_Pred (Not x) = not . expr_to_Pred x
   
-  expr_to_Pred (BoolOp op x x') = uncurry (boolOp_to_op op)
-                                  . (expr_to_Pred x &&& expr_to_Pred x')
-  
-  expr_to_Pred (RelOp op s v) = s `operator` v
-    where
-      operator :: Selection -> Value -> Predicate
-      operator = \case Name -> op_on (fromRaw  *** name)
-                       Date -> op_on (fromDay  *** date)
-                       Size -> op_on (fromSize *** size)
+  expr_to_Pred (Op op x x') =
+    case op of
+      And -> (&&) `bool'bool'` x $ x'
+      Or  -> (||) `bool'bool'` x $ x'
+     
+      Less    | (Atom a, Atom a') <- (x, x') -> (<)  `ord'ord'`  a $ a'
+      Greater | (Atom a, Atom a') <- (x, x') -> (>)  `ord'ord'`  a $ a'
+      Equal   | (Atom a, Atom a') <- (x, x') -> (==) `ord'ord'`  a $ a'
+      NotEq   | (Atom a, Atom a') <- (x, x') -> (/=) `ord'ord'`  a $ a'
+      LessEq  | (Atom a, Atom a') <- (x, x') -> (<=) `ord'ord'`  a $ a'
+      GreatEq | (Atom a, Atom a') <- (x, x') -> (>=) `ord'ord'`  a $ a'
       
-      op_on selector v = uncurry (flip $ relOp_to_op op) . (curry selector) v
+      Like    | (Atom a, Atom a') <- (x, x') -> (=~) `name'str'` a $ a'
+     
+      _ -> error invalid_expr
+    where      
+      bool'bool' op x x' = \ fi -> expr_to_Pred x fi `op` expr_to_Pred x' fi
       
-      fromRaw  = \case RawVal  r -> r; _ -> invalid_val "fromRaw"
-      fromDay  = \case DayVal  d -> d; _ -> invalid_val "fromDay"
-      fromSize = \case SizeVal s -> s; _ -> invalid_val "fromSize"
+      name'str' op (Sel Name) (Val (StrVal s)) = (`op` s) . name
+      name'str' _ _ _ = error invalid_expr
       
-      invalid_val fn = error $ "Expr." ++ fn ++ ": invalid value."
+      ord'ord' :: (forall a. (Ord a) => a -> a -> Bool)
+               -> Atom -> Atom -> Predicate
+      ord'ord' op a a'
+        | (Sel s, Val v) <- (a, a') = op      `on` s $ v
+        | (Val v, Sel s) <- (a, a') = flip op `on` s $ v
+        | otherwise = error invalid_expr
+        where
+          on :: (forall a. (Ord a) => a -> a -> Bool)
+             -> Selection -> Value -> Predicate
+          on op s v =
+            let op_on selector = uncurry (flip op) . curry selector v
+            in case s of
+                Name -> op_on (fromStrVal  *** name)
+                Date -> op_on (fromDayVal  *** date)
+                Size -> op_on (fromSizeVal *** size)
+
+          
+          fromStrVal  = \case StrVal  s -> s; _ -> invalid_val "fromRaw"
+          fromDayVal  = \case DayVal  d -> d; _ -> invalid_val "fromDay"
+          fromSizeVal = \case SizeVal s -> s; _ -> invalid_val "fromSize"
+          
+          invalid_val fn = error $ "Expr." ++ fn ++ ": invalid value."
+      
+      
+      invalid_expr = "Expr.expr_to_Pred: invalid expression"
   -- ---------------------------------------------------------------------------
-  
-  
-  flip_relOp :: RelationalOp -> RelationalOp
-  flip_relOp = \case Less    -> Greater
-                     Greater -> Less
-                     Equal   -> Equal
-                     NotEq   -> NotEq
-                     LessEq  -> GreatEq
-                     GreatEq -> LessEq
-  
-  boolOp_to_op :: BooleanOp -> (Bool -> Bool -> Bool)
-  boolOp_to_op = \case And -> (&&)
-                       Or  -> (||)
-  
-  relOp_to_op :: (Ord a) => RelationalOp -> (a -> a -> Bool)
-  relOp_to_op = \case Less    -> (<)
-                      Greater -> (>) 
-                      Equal   -> (==)
-                      NotEq   -> (/=)
-                      LessEq  -> (<=)
-                      GreatEq -> (>=)

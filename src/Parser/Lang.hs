@@ -15,11 +15,11 @@ module Parser.Lang where
   import Control.Arrow  (first)
   import Control.Monad  (mzero)
   import Data.Functor   ((<$>), ($>))
-  import Text.Read      (readMaybe)
   
   import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)
   import Text.Parsec.Language (emptyDef)
-  import Text.Parsec.Expr     (Operator(Prefix, Infix), Assoc(AssocRight))
+  import Text.Parsec.Expr     (Operator(Prefix, Infix)
+                                , Assoc(AssocRight, AssocNone))
   import qualified Text.Parsec.Token as Token (commaSep1, identLetter
                                               , identStart, identifier
                                               , makeTokenParser, parens
@@ -28,7 +28,7 @@ module Parser.Lang where
                                               , stringLiteral, whiteSpace   )
   
   import Query (Selection(..), Join(..))
-  import Expr  (Expr(..), Value(..), BooleanOp(..), RelationalOp(..))
+  import Expr  (Expr(Not, Op), Op(..))
   
   
   
@@ -40,8 +40,8 @@ module Parser.Lang where
                               , "right", "full", "join", "on", "where"
                               , "name", "date", "size"                    ]
     
-    , Token.reservedOpNames = [ "<", ">", "<=", ">=", "==", "!=", "&&", "||"
-                              , "!"                                         ]
+    , Token.reservedOpNames = [ "<", ">", "<=", ">=", "==", "!=", "=~"
+                              , "&&", "||", "!"                       ]
   }  
   
   -- fsql_ident_invalidCs : all the operator chars, quotation chars, parenthesis
@@ -62,6 +62,7 @@ module Parser.Lang where
   
   fsql_ident = ident <|> string
   
+  
   fsql_selection =  (reserved "name" $> Name)
                 <|> (reserved "date" $> Date)
                 <|> (reserved "size" $> Size)
@@ -69,12 +70,6 @@ module Parser.Lang where
   
   fsql_selections = commaSep1 fsql_selection
   
-  fsql_val s = case s of
-                Name -> return . RawVal
-                Date -> parseVal DayVal
-                Size -> parseVal SizeVal
-    where
-      parseVal f = maybe (fail $ "invalid " ++ show s) (return . f) . readMaybe
   
   fsql_recursive = (/= Nothing)
                     <$> optionMaybe (reserved "recursive")
@@ -87,15 +82,15 @@ module Parser.Lang where
                <?> "join type (inner|outer|left|right|full)"
   
   
-  fsql_boolOps = [ [Prefix (reservedOp "!"  $> Not)]
-                 , [Infix  (reservedOp "&&" $> BoolOp And) AssocRight]
-                 , [Infix  (reservedOp "||" $> BoolOp Or ) AssocRight] ]
-  
-  fsql_relOp = foldr ((<|>) . uncurry ($>) . (first reservedOp)) mzero
-    [ ("==", Equal  )
-    , ("!=", NotEq  )
-    , ("<=", LessEq )
-    , (">=", GreatEq)
-    , ("<" , Less   )
-    , (">" , Greater) ]
-    <?> "relational operator (== | != | <= | >= | < | >)"
+  fsql_ops = [ [ Infix (reservedOp "==" $> Op Equal  ) AssocNone
+               , Infix (reservedOp "!=" $> Op NotEq  ) AssocNone
+               , Infix (reservedOp "<=" $> Op LessEq ) AssocNone
+               , Infix (reservedOp ">=" $> Op GreatEq) AssocNone
+               , Infix (reservedOp "<"  $> Op Less   ) AssocNone
+               , Infix (reservedOp ">"  $> Op Greater) AssocNone
+               , Infix (reservedOp "=~" $> Op Like   ) AssocNone ]
+             
+             , [ Prefix (reservedOp "!"  $> Not) ]
+             
+             , [ Infix (reservedOp "&&" $> Op And) AssocRight ]
+             , [ Infix (reservedOp "||" $> Op Or ) AssocRight ] ]

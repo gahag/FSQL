@@ -8,33 +8,28 @@
  -}
 
 module Parser.Expr (
-    fsql_expr
+    fsql_expr, typecheck
   ) where 
   
-  import Text.Parsec      ((<|>), (<?>))
+  import Control.Applicative  ((<$>))
+  
+  import Text.Parsec      (Parsec, (<|>), (<?>))
   import Text.Parsec.Expr (buildExpressionParser)
   
-  import Expr         (Expr(RelOp), flip_relOp)
-  import Parser.Lang  (fsql_boolOps, fsql_ident, fsql_relOp, fsql_selection
-                      , fsql_val, parens)
+  import Expr         (Expr(Atom), Atom(..), Value(..), TypeError(..), typecheck)
+  import Parser.Lang  (fsql_ident, fsql_ops, fsql_selection, parens)
   
   
   
-  fsql_relOperation =
-    do sel <- fsql_selection
-       op  <- fsql_relOp
-       val <- fsql_ident >>= fsql_val sel
-       return (RelOp op sel val)  -- `sel op val`
-    <|>                           -- or
-    do val' <- fsql_ident         -- `val op sel`
-       op   <- fsql_relOp
-       sel  <- fsql_selection
-       val  <- fsql_val sel val'
-       return (RelOp (flip_relOp op) sel val)
-    <?> "relational expression"
+  fsql_expr = fsql_untypedExpr
+          >>= fsql_typecheck
   
+  fsql_untypedExpr = buildExpressionParser fsql_ops (
+                      parens fsql_untypedExpr
+                      <|>(Atom . Sel <$> fsql_selection)
+                      <|>(Atom . Val . UnparsedVal <$> fsql_ident)
+                      <?> "expression"
+                     )
   
-  fsql_expr = buildExpressionParser fsql_boolOps
-               (parens fsql_expr
-                <|> fsql_relOperation
-                <?> "expression"      )
+  fsql_typecheck :: Expr -> Parsec String u Expr
+  fsql_typecheck = either (fail . show) return . typecheck
