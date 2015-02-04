@@ -8,15 +8,17 @@
  -}
 
 module Parser.Expr (
-    fsql_expr, typecheck
+    fsql_expr
   ) where 
   
   import Control.Applicative  ((<$>))
   
-  import Text.Parsec      (Parsec, (<|>), (<?>))
-  import Text.Parsec.Expr (buildExpressionParser)
+  import Text.Parsec        (Parsec, (<|>), (<?>))
+  import Text.Parsec.Expr   (buildExpressionParser)
+  import Text.Parsec.Error  (Message(Message), newErrorMessage)
+  import Text.Parsec.Prim   (Consumed(Consumed), Reply(Error), statePos, mkPT)
   
-  import Expr         (Expr(Atom), Atom(..), Value(..), TypeError(..), typecheck)
+  import Expr         (Expr(Atom), Atom(..), Value(UnparsedVal), typecheck)
   import Parser.Lang  (fsql_ident, fsql_ops, fsql_selection, parens)
   
   
@@ -32,4 +34,7 @@ module Parser.Expr (
                      )
   
   fsql_typecheck :: Expr -> Parsec String u Expr
-  fsql_typecheck = either (fail . show) return . typecheck
+  fsql_typecheck = either parserFail return . typecheck
+    where
+      parserFail err = mkPT $ return . Consumed . return . Error
+                            . newErrorMessage (Message (show err)) . statePos
