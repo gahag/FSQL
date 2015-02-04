@@ -38,9 +38,11 @@ The complete FSLQ grammar:
                  | <selection>
   <join_type>  ::= left | full | inner | outer | right
   
-  <not_op>  ::= !
-  <bool_op> ::= && | ||
-  <rel_op>  ::= == | != | <= | >= | < | > 
+  <not_op>          ::= !
+  <bool'bool_ops>   ::= && | ||
+  <name'ident'_ops> ::= =~
+  <ord'ord'_ops>    ::= == | != | <= | >= | < | >
+  
   
   <select> ::= select <selections>
   
@@ -56,10 +58,11 @@ The complete FSLQ grammar:
   <expr> ::= (<expr>)
            | <not_op> <expr>
            | <rel_expr>
-           | <expr> <bool_op> <expr>
+           | <expr> <bool'bool'_ops> <expr>
   
-  <rel_expr> ::= <ident>     <rel_op> <selection>
-               | <selection> <rel_op> <ident>
+  <rel_expr> ::= <ident>     <ord'ord'_ops> <selection>
+               | <selection> <ord'ord'_ops> <ident>
+               | name <name'ident'_ops> <ident>
   
   
   <query> ::= <select> <source>
