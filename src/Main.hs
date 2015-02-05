@@ -14,6 +14,7 @@ module Main (
   ) where
   
   import Control.Arrow        (left)
+  import Control.Monad        (unless)
   import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
   import Data.Char            (isSpace)
   import Data.Function        (on)
@@ -64,7 +65,6 @@ module Main (
       command_loop =
         do putStr "fsql> " >> hFlush stdout
            s <- getLine
-           if lexeme "exit" s || lexeme "quit" s
-            then return ()
-            else fetch_fsql (parse_fsql "interactive" s)
+           unless (lexeme "exit" s || lexeme "quit" s)
+            $ fetch_fsql (parse_fsql "interactive" s)
               >> command_loop
