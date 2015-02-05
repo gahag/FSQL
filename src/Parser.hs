@@ -54,7 +54,7 @@ module Parser (
                 *>  fsql_expr)
                 <?> "where statement"
   
-
+  
   fsql = Query
           <$> fsql_select
           <*> fsql_source

@@ -15,34 +15,28 @@ module Debug.Instances where
   import Prelude hiding (Either(..))
   
   import Query  (Query(..), Selection(..), Source(..), Join(..), Predicate)
-  import Expr   (Expr(..), Value(..), BooleanOp(..), RelationalOp(..))
+  import Expr   (Expr(..), Op(..))
   
   
   
   instance Show Expr where
+    show (Atom a) = show a
     show (Not e)  = " !" ++ show e ++ " "
-    show (BoolOp o e e') = concat ["(", show e, " ", show o, " ", show e', ")"]
-    show (RelOp  o s v)  = concat ["(", show s, " ", show o, " ", show v, ")"]
+    show (Op op e e') = concat ["(", show e, " ", show op, " ", show e', ")"]
   
-  instance Show Value where
-    show = \case RawVal  s -> s
-                 DayVal  d -> show d
-                 SizeVal s -> show s
-  
-  instance Show BooleanOp where
-    show = \case And -> "&&"
-                 Or  -> "||"
-  
-  instance Show RelationalOp where
-    show = \case Less    -> "<"
+  instance Show Op where
+    show = \case And     -> "&&"
+                 Or      -> "||"
+                 Less    -> "<"
                  Greater -> ">"
                  Equal   -> "=="
                  NotEq   -> "!="
                  LessEq  -> "<="
                  GreatEq -> ">="
+                 Like    -> "=~"
 
   instance Show Query where
-    show (Query s s' p) = concat ["query ", show s, " ", show s' , " ", show p]
+    show (Query ss s p) = concat ["query ", show ss, " ", show s , " ", show p]
   
   instance Show Source where
     show = \case (Single s rec)     -> show_rec rec (show s)

@@ -19,7 +19,7 @@ module Parser.Lang where
   import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)
   import Text.Parsec.Language (emptyDef)
   import Text.Parsec.Expr     (Operator(Prefix, Infix)
-                                , Assoc(AssocRight, AssocNone))
+                              , Assoc(AssocRight, AssocNone))
   import qualified Text.Parsec.Token as Token (commaSep1, identLetter
                                               , identStart, identifier
                                               , makeTokenParser, parens
@@ -44,7 +44,7 @@ module Parser.Lang where
                               , "&&", "||", "!"                       ]
   }  
   
-  -- fsql_ident_invalidCs : all the operator chars, quotation chars, parenthesis
+  -- fsql_ident_invalidCs : all the operator chars, quotation chars, parenthesis,
   -- whitespace and comma (comma is used as delimiter in `fsql_selections`).
   fsql_ident_invalidCs = "\" '!<>&|=(),"
 
@@ -61,6 +61,7 @@ module Parser.Lang where
   
   
   fsql_ident = ident <|> string
+            <?> "identifier or string"
   
   
   fsql_selection =  (reserved "name" $> Name)
@@ -69,10 +70,12 @@ module Parser.Lang where
                 <?> "selection identifier (name|date|size)"
   
   fsql_selections = commaSep1 fsql_selection
+                  <?> "one or more selections"
   
   
   fsql_recursive = (/= Nothing)
                     <$> optionMaybe (reserved "recursive")
+                    <?> "keyword `recursive`"
   
   fsql_joinType =  (reserved "inner" $> Inner)
                <|> (reserved "outer" $> Outer)

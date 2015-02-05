@@ -34,7 +34,7 @@ module Parser.Expr (
                      )
   
   fsql_typecheck :: Expr -> Parsec String u Expr
-  fsql_typecheck = either parserFail return . typecheck
-    where
-      parserFail err = mkPT $ return . Consumed . return . Error
-                            . newErrorMessage (Message (show err)) . statePos
+  fsql_typecheck = either pfail return . typecheck
+    where -- pfail : use `Consumed` so previous error messages are cleared.
+      pfail err = mkPT $ return . Consumed . return . Error
+                          . newErrorMessage (Message (show err)) . statePos

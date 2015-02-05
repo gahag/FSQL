@@ -35,9 +35,9 @@ module Expr (
   data Atom = Sel Selection
             | Val Value
   
-  data Value = UnparsedVal String
-             | StrVal  String
-             | DayVal  Day
+  data Value = UnparsedVal String -- Build Expr Values with `UnparsedVal`, and
+             | StrVal  String     -- `typecheck` will parse it into the
+             | DayVal  Day        -- appropriate value type.
              | SizeVal FileOffset
   
   data Op = And
@@ -62,9 +62,9 @@ module Expr (
   
   instance Show Value where
     show = \case UnparsedVal s -> s
-                 StrVal s      -> s
-                 DayVal d      -> show d
-                 SizeVal s     -> show s
+                 StrVal      s -> s
+                 DayVal      d -> show d
+                 SizeVal     s -> show s
   
   instance Show TypeError where
     show =
@@ -81,6 +81,7 @@ module Expr (
   invalid_val = InvalidValue . quote
   unexpected  = UnexpectedType
   x `expecting` s = throwError (x s)
+  
   
   
   -- typecheck -----------------------------------------------------------------

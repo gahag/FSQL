@@ -79,9 +79,13 @@ module Query (
       fetch_files = if rec then getDirContentsRec
                            else getDirContents
   
-  fetch_source (Join j (s, s') sel rec) = joiner j (eq_on_sel sel)
-                                            <$> fetch_source (Single s rec)
-                                            <*> fetch_source (Single s' rec)
+  fetch_source (Join j (s, s') sel rec) =
+    let eq_selector = case sel of Name -> (==) `on` name
+                                  Date -> (==) `on` date
+                                  Size -> (==) `on` size
+      in joiner j eq_selector
+          <$> fetch_source (Single s rec)
+          <*> fetch_source (Single s' rec)
   -- ---------------------------------------------------------------------------
   
   
@@ -101,8 +105,3 @@ module Query (
       selector = \case Name -> name
                        Date -> show . date
                        Size -> show . size
-  
-  eq_on_sel :: Selection -> (FileInfo -> FileInfo -> Bool)
-  eq_on_sel = \case Name -> (==) `on` name
-                    Date -> (==) `on` date
-                    Size -> (==) `on` size
