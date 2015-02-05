@@ -18,17 +18,21 @@ module Main (
   import Data.Char            (isSpace)
   import Data.Function        (on)
   import Data.List            (intercalate, maximumBy, transpose)
+  import Data.Version         (showVersion)
 
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
   
-  import Query  (fetch_query)
-  import Parser (parse_fsql)
+  import Query      (fetch_query)
+  import Parser     (parse_fsql)
+  import Paths_FSQL (version)
   
   
   
   usage = unlines
-    [ "Enter query statement or quit|exit to leave."
+    [ "FSQL v" ++ showVersion version ++ " - hosted at \
+      \https://github.com/gahag/FSQL"
+    , "Enter query statement or quit|exit to leave."
     , "FSQL can also be used straight from the commandline: fsql <query>"
     , "Please note that where statements should be quoted in the \
       \commandline, as they may be interpreted as shell commands. \
