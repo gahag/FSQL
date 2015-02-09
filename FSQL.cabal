@@ -8,17 +8,16 @@
 
 name:                FSQL
 version:             1.2
-synopsis:            FSQL : File System Query Language is a tool for performing queries on the local filesystem with syntax similar to SQL.
--- description:         
+synopsis:            FSQL is a tool for performing queries on the local filesystem with syntax similar to SQL.
+description:         FSQL : File System Query Language is a tool for performing queries on the local filesystem with syntax similar to SQL.
 homepage:            https://github.com/gahag/FSQL
 license:             BSD3
 license-file:        LICENSE
 author:              gahag
 maintainer:          gahag@hotmail.com.br
--- copyright:           
+copyright:           (C) 2015 gahag
 category:            Database
 build-type:          Simple
--- extra-source-files:
 cabal-version:       >=1.10
 
 executable FSQL
