@@ -4,11 +4,16 @@ FSQL is a tool for performing queries on the local filesystem
 with syntax similar to SQL.
 
 ## Usage examples
-Check the Specification file for the complete usage guide.
+Check the [Specification file](Specification) for the complete usage guide.
 
 ### Standard select clause
 ```sql
 select name from dir
+```
+
+### Standard recursive clause
+```sql
+select name recursive from dir
 ```
 
 ### Standard where clause

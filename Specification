@@ -73,10 +73,13 @@ The complete FSLQ grammar:
 Examples:
   Standard select clause
     select name from dir
-
+  
+  Standard recursive clause
+    select name recursive from dir
+  
   Standard where clause
     select date from dir where name == file && date == 2015-12-30 || name > t
-
+  
   Standard inner join clause
     select name from dir inner join dir' on date
   
