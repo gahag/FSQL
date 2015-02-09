@@ -20,7 +20,7 @@ category:            Database
 build-type:          Simple
 cabal-version:       >=1.10
 
-executable FSQL
+executable fsql
   main-is:             Main.hs
   other-modules:       FileInfo
                        Expr
