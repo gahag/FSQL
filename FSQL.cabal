@@ -18,6 +18,7 @@ maintainer:          gahag@hotmail.com.br
 copyright:           (C) 2015 gahag
 category:            Database
 build-type:          Simple
+extra-doc-files:     Specification
 cabal-version:       >=1.10
 
 executable fsql

@@ -18,6 +18,8 @@ Any filepath/filename containing one of the characters
 must be quoted with double quotes. Double quotes inside
 quoted identifiers must me escaped with backslash(\).
 
+###############################################################
+
 Data keywords:
 name : file name
 date : file modification date
@@ -68,7 +70,7 @@ The complete FSLQ grammar:
   <query> ::= <select> <source>
             | <select> <source> <where>
 
-
+###############################################################
 
 Examples:
   Standard select clause
