@@ -36,7 +36,7 @@ select name, date from dir
 ## Installation
 
 FSQL comes as a single executable file, that can be downloaded from the
-[releases page](https://github.com/gahag/FSQL/releases)
+[releases page](https://github.com/gahag/FSQL/releases).
 
 ## License
 
