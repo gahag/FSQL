@@ -48,42 +48,40 @@ The complete FSLQ grammar:
   
   <select> ::= select <selections>
   
-  <source> ::= <source_rec>
-             | <source_non_rec>
-  <source_rec>      ::= recursive <source_non_rec>
-  <source_non_rec>  ::= <source_simple> | <source_join>
-  <source_simple>   ::= from <ident>
-  <source_join>     ::= <source_simple> <join_type> join <ident> on <selection>
+  <from>   ::= from <source>
+             | recursive from <source>
+  <source> ::= <ident>
+             | <ident> <join_type> join <ident> on <selection>
   
   <where> ::= where <expr>
-  
-  <expr> ::= (<expr>)
-           | <not_op> <expr>
-           | <rel_expr>
-           | <expr> <bool'bool'_ops> <expr>
-  
+  <expr>  ::= (<expr>)
+            | <not_op> <expr>
+            | <rel_expr>
+            | <expr> <bool'bool'_ops> <expr>
   <rel_expr> ::= <ident>     <ord'ord'_ops> <selection>
                | <selection> <ord'ord'_ops> <ident>
                | name <name'ident'_ops> <ident>
   
   
-  <query> ::= <select> <source>
-            | <select> <source> <where>
+  <query> ::= <select> <from>
+            | <select> <from> <where>
 
 ###############################################################
 
 Examples:
-  Standard select clause
+  Select clause
     select name from dir
   
-  Standard recursive clause
-    select name recursive from dir
+  Where clause
+    select date from dir where name == file && date == 2015-12-30
+    select size from dir where name =~ "test*"
+    select name from dir where name > b
   
-  Standard where clause
-    select date from dir where name == file && date == 2015-12-30 || name > t
-  
-  Standard inner join clause
+  Inner join clause
     select name from dir inner join dir' on date
   
+  Recursive query
+    select name recursive from dir
+
   Multiple selections
     select name, date from dir

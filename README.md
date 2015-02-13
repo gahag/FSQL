@@ -6,24 +6,31 @@ with syntax similar to SQL.
 ## Usage examples
 Check the [Specification file](Specification) for the complete usage guide.
 
-### Standard select clause
+### Select clause
 ```sql
 select name from dir
 ```
 
-### Standard recursive clause
+### Where clause
+```sql
+select date from dir where name == file && date == 2015-12-30
+select size from dir where name =~ "test*"
+select name from dir where name > b
+```
+
+### Inner join clause
+```sql
+select name from dir inner join dir' on date
+```
+
+### Recursive query
 ```sql
 select name recursive from dir
 ```
 
-### Standard where clause
+### Multiple selections
 ```sql
-select date from dir where name == myFile && date == 2015-12-30 || name > t
-```
-
-### Standard inner join clause
-```sql
-select name from dir inner join dir on date
+select name, date from dir
 ```
 
 ## Installation
