@@ -111,7 +111,8 @@ module Expr (
               (Sel Name, Val (UnparsedVal s)) -> return (x, strVal s)
               (Sel Name, a) -> unexpected (quote a) `expecting` "value"
               (a, _) -> unexpected (quote a) `expecting` "`name`"
-        | otherwise = unexpected "expression" `expecting` "selection or value"
+        | otherwise = unexpected "expression" `expecting`
+                                                "selection identifier or value"
       
       a'a'
         | (Atom a, Atom a') <- (x, x')
@@ -119,8 +120,10 @@ module Expr (
               (Sel s, Val v) -> (x,)  <$> parseVal s v
               (Val v, Sel s) -> (,x') <$> parseVal s v
               (Sel _, a) -> unexpected (quote a) `expecting` "value"
-              (Val _, a) -> unexpected (quote a) `expecting` "selection"
-        | otherwise = unexpected "expression" `expecting` "selection or value"
+              (Val _, a) -> unexpected (quote a) `expecting`
+                                                    "selection identifier"
+        | otherwise = unexpected "expression" `expecting`
+                                                "selection identifier or value"
         where
           parseVal sel (UnparsedVal str) =
             let parse f   = maybe parse_err (return . f) . readMaybe

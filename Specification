@@ -78,7 +78,7 @@ Examples:
     select name from dir where name > b
   
   Inner join clause
-    select name from dir inner join dir' on date
+    select name from dir inner join dir2 on date
   
   Recursive query
     select name recursive from dir

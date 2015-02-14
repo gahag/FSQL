@@ -23,9 +23,9 @@ module Parser.Lang where
   import qualified Text.Parsec.Token as Token (commaSep1, identLetter
                                               , identStart, identifier
                                               , makeTokenParser, parens
-                                              , reserved, reservedNames
-                                              , reservedOp, reservedOpNames
-                                              , stringLiteral, whiteSpace   )
+                                              , reserved, reservedOp
+                                              , reservedOpNames, stringLiteral
+                                              , whiteSpace                    )
   
   import Query (Selection(..), Join(..))
   import Expr  (Expr(Not, Op), Op(..))
@@ -35,10 +35,6 @@ module Parser.Lang where
   fsql_langDef = emptyDef {
       Token.identStart      = noneOf fsql_ident_invalidCs
     , Token.identLetter     = noneOf fsql_ident_invalidCs
-    
-    , Token.reservedNames   = [ "select", "from", "inner", "outer", "left"
-                              , "right", "full", "join", "on", "where"
-                              , "name", "date", "size"                    ]
     
     , Token.reservedOpNames = [ "<", ">", "<=", ">=", "==", "!=", "=~"
                               , "&&", "||", "!"                       ]

@@ -20,7 +20,7 @@ select name from dir where name > b
 
 ### Inner join clause
 ```sql
-select name from dir inner join dir' on date
+select name from dir inner join dir2 on date
 ```
 
 ### Recursive query
