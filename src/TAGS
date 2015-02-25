@@ -1,0 +1,81 @@
+
+Expr.hs,869
+  ExprExpr31,733
+  data Expr = AtomAtom31,733
+            | NotNot32,756
+            | OpOp33,778
+  AtomAtom35,809
+  data Atom = SelSel35,809
+            | ValVal36,836
+  ValueValue38,861
+  data Value = UnparsedValUnparsedVal38,861
+             | StrValStrVal39,939
+             | DayValDayVal40,1010
+             | SizeValSizeVal41,1070
+  OpOp43,1105
+  data Op = AndAnd43,1105
+          | OrOr44,1120
+          | LessLess45,1134
+          | GreaterGreater46,1150
+          | EqualEqual47,1169
+          | NotEqNotEq48,1186
+          | LessEqLessEq49,1203
+          | GreatEqGreatEq50,1221
+          | LikeLike51,1240
+  TypeErrorTypeError53,1258
+  data TypeError = InvalidValueInvalidValue53,1258
+                 | UnexpectedTypeUnexpectedType54,1336
+  typechecktypecheck90,2275
+  expr_to_Predexpr_to_Pred144,4565
+
+FileInfo.hs,174
+  FileInfoFileInfo40,1030
+  namename45,1102
+  datedate48,1141
+  sizesize51,1253
+  getDirContentsgetDirContents54,1280
+  getDirContentsRecgetDirContentsRec57,1396
+
+Parser.hs,31
+  parse_fsqlparse_fsql26,654
+
+Parser/Expr.hs,29
+  fsql_exprfsql_expr26,710
+
+Parser/Lang.hs,532
+  fsql_langDeffsql_langDef35,1194
+  fsql_ident_invalidCsfsql_ident_invalidCs45,1644
+  fsql_lexerfsql_lexer48,1686
+  commaSep1commaSep150,1737
+  identident51,1782
+  parensparens52,1827
+  reservedreserved53,1872
+  reservedOpreservedOp54,1917
+  stringstring55,1962
+  whiteSpacewhiteSpace56,2007
+  fsql_identfsql_ident59,2056
+  fsql_selectionfsql_selection63,2129
+  fsql_selectionsfsql_selections68,2325
+  fsql_recursivefsql_recursive72,2419
+  fsql_joinTypefsql_joinType76,2555
+  fsql_opsfsql_ops84,2849
+
+Query.hs,568
+  QueryQuery34,916
+  data Query = QueryQuery34,916
+  SelectionSelection37,1047
+  data Selection = NameName37,1047
+                 | DateDate38,1070
+                 | SizeSize39,1093
+  SourceSource42,1163
+  data Source = SingleSingle42,1163
+              | JoinJoin43,1202
+  RecurseRecurse45,1268
+  JoinJoin47,1291
+  data Join = InnerInner47,1291
+            | LeftLeft48,1310
+            | RightRight49,1329
+            | OuterOuter50,1348
+            | FullFull51,1367
+  PredicatePredicate54,1462
+  fetch_queryfetch_query65,1685
