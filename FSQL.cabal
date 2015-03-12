@@ -14,7 +14,7 @@ homepage:            https://github.com/gahag/FSQL
 license:             BSD3
 license-file:        LICENSE
 author:              gahag
-maintainer:          gahag@hotmail.com.br
+maintainer:          gabriel.s.b@live.com
 copyright:           (C) 2015 gahag
 category:            Database
 build-type:          Simple
