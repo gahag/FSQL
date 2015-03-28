@@ -20,8 +20,7 @@ module Query (
   import Control.Monad.Except (ExceptT, throwError)
   import Control.Monad.Trans  (lift)
   import Data.Function        (on)
-  import Data.List            (intercalate, sort
-                              , deleteFirstsBy, intersectBy, unionBy)
+  import Data.List            (sort, deleteFirstsBy, intersectBy, unionBy)
   
   import System.Directory (doesDirectoryExist)
   import System.FilePath  ((</>))
@@ -50,7 +49,7 @@ module Query (
             | Outer
             | Full
   
-  --   Predicate : Takes the FileInfo and returns if it should be filtered.
+  -- Predicate : Takes the FileInfo and returns if it should be filtered.
   type Predicate = FileInfo -> Bool
   
   

@@ -19,7 +19,7 @@ module Parser (
   import Expr         (expr_to_Pred)
   import Parser.Expr  (fsql_expr)
   import Parser.Lang  (fsql_ident, fsql_joinType, fsql_recursive, fsql_selection
-                      , fsql_selections, parens, reserved, whiteSpace)
+                      , fsql_selections, reserved, whiteSpace)
   
   
   

@@ -16,7 +16,7 @@ module Expr (
     expr_to_Pred
   ) where
   
-  import Control.Arrow        ((***), (&&&))
+  import Control.Arrow        ((***))
   import Control.Applicative  ((<$>), (<*>))
   import Control.Monad.Except (throwError)
   import Text.Read            (readMaybe)
@@ -24,7 +24,7 @@ module Expr (
   import Text.Regex.TDFA  ((=~))
   
   import Query    (Selection(..), Predicate)
-  import FileInfo (FileInfo, Day, FileOffset, name, date, size)
+  import FileInfo (Day, FileOffset, name, date, size)
   
   
   
@@ -109,8 +109,8 @@ module Expr (
         | (Atom a, Atom a') <- (x, x')
           = case (a, a') of
               (Sel Name, Val (UnparsedVal s)) -> return (x, strVal s)
-              (Sel Name, a) -> unexpected (quote a) `expecting` "value"
-              (a, _) -> unexpected (quote a) `expecting` "`name`"
+              (Sel Name, atom) -> unexpected (quote atom) `expecting` "value"
+              (atom, _) -> unexpected (quote atom) `expecting` "`name`"
         | otherwise = unexpected "expression" `expecting`
                                                 "selection identifier or value"
       
@@ -119,9 +119,9 @@ module Expr (
           = case (a, a') of
               (Sel s, Val v) -> (x,)  <$> parseVal s v
               (Val v, Sel s) -> (,x') <$> parseVal s v
-              (Sel _, a) -> unexpected (quote a) `expecting` "value"
-              (Val _, a) -> unexpected (quote a) `expecting`
-                                                    "selection identifier"
+              (Sel _, atom) -> unexpected (quote atom) `expecting` "value"
+              (Val _, atom) -> unexpected (quote atom) `expecting`
+                                                        "selection identifier"
         | otherwise = unexpected "expression" `expecting`
                                                 "selection identifier or value"
         where
