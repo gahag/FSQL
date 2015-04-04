@@ -1,34 +1,34 @@
 
-Expr.hs,869
-  ExprExpr31,733
-  data Expr = AtomAtom31,733
-            | NotNot32,756
-            | OpOp33,778
-  AtomAtom35,809
-  data Atom = SelSel35,809
-            | ValVal36,836
-  ValueValue38,861
-  data Value = UnparsedValUnparsedVal38,861
-             | StrValStrVal39,939
-             | DayValDayVal40,1010
-             | SizeValSizeVal41,1070
-  OpOp43,1105
-  data Op = AndAnd43,1105
-          | OrOr44,1120
-          | LessLess45,1134
-          | GreaterGreater46,1150
-          | EqualEqual47,1169
-          | NotEqNotEq48,1186
-          | LessEqLessEq49,1203
-          | GreatEqGreatEq50,1221
-          | LikeLike51,1240
-  TypeErrorTypeError53,1258
-  data TypeError = InvalidValueInvalidValue53,1258
-                 | UnexpectedTypeUnexpectedType54,1336
-  typechecktypecheck90,2275
-  expr_to_Predexpr_to_Pred144,4565
+.\Expr.hs,868
+  ExprExpr31,716
+  data Expr = AtomAtom31,716
+            | NotNot32,739
+            | OpOp33,761
+  AtomAtom35,792
+  data Atom = SelSel35,792
+            | ValVal36,819
+  ValueValue38,844
+  data Value = UnparsedValUnparsedVal38,844
+             | StrValStrVal39,922
+             | DayValDayVal40,993
+             | SizeValSizeVal41,1053
+  OpOp43,1088
+  data Op = AndAnd43,1088
+          | OrOr44,1103
+          | LessLess45,1117
+          | GreaterGreater46,1133
+          | EqualEqual47,1152
+          | NotEqNotEq48,1169
+          | LessEqLessEq49,1186
+          | GreatEqGreatEq50,1204
+          | LikeLike51,1223
+  TypeErrorTypeError53,1241
+  data TypeError = InvalidValueInvalidValue53,1241
+                 | UnexpectedTypeUnexpectedType54,1319
+  typechecktypecheck90,2258
+  expr_to_Predexpr_to_Pred144,4576
 
-FileInfo.hs,174
+.\FileInfo.hs,174
   FileInfoFileInfo40,1030
   namename45,1102
   datedate48,1141
@@ -36,13 +36,13 @@ FileInfo.hs,174
   getDirContentsgetDirContents54,1280
   getDirContentsRecgetDirContentsRec57,1396
 
-Parser.hs,31
-  parse_fsqlparse_fsql26,654
+.\Parser.hs,31
+  parse_fsqlparse_fsql26,646
 
-Parser/Expr.hs,29
+.\Parser\Expr.hs,29
   fsql_exprfsql_expr26,710
 
-Parser/Lang.hs,532
+.\Parser\Lang.hs,532
   fsql_langDeffsql_langDef35,1194
   fsql_ident_invalidCsfsql_ident_invalidCs45,1644
   fsql_lexerfsql_lexer48,1686
@@ -60,22 +60,34 @@ Parser/Lang.hs,532
   fsql_joinTypefsql_joinType76,2555
   fsql_opsfsql_ops84,2849
 
-Query.hs,568
-  QueryQuery34,916
-  data Query = QueryQuery34,916
-  SelectionSelection37,1047
-  data Selection = NameName37,1047
-                 | DateDate38,1070
-                 | SizeSize39,1093
-  SourceSource42,1163
-  data Source = SingleSingle42,1163
-              | JoinJoin43,1202
-  RecurseRecurse45,1268
-  JoinJoin47,1291
-  data Join = InnerInner47,1291
-            | LeftLeft48,1310
-            | RightRight49,1329
-            | OuterOuter50,1348
-            | FullFull51,1367
-  PredicatePredicate54,1462
-  fetch_queryfetch_query65,1685
+.\Query.hs,568
+  QueryQuery33,873
+  data Query = QueryQuery33,873
+  SelectionSelection36,1004
+  data Selection = NameName36,1004
+                 | DateDate37,1027
+                 | SizeSize38,1050
+  SourceSource41,1120
+  data Source = SingleSingle41,1120
+              | JoinJoin42,1159
+  RecurseRecurse44,1225
+  JoinJoin46,1248
+  data Join = InnerInner46,1248
+            | LeftLeft47,1267
+            | RightRight48,1286
+            | OuterOuter49,1305
+            | FullFull50,1324
+  PredicatePredicate53,1417
+  fetch_queryfetch_query64,1640
+
+C:\Users\gahag\Desktop\gahag\Programming\Compiled\Haskell\FSQL\dist\build\autogen\Paths_FSQL.hs,216
+versionversion20,426
+getBinDirgetBinDir26,618
+getLibDirgetLibDir29,679
+getDataDirgetDataDir32,768
+getLibexecDirgetLibexecDir35,902
+getSysconfDirgetSysconfDir38,972
+getDataFileNamegetDataFileName41,1051
+
+Main.hs,20
+  mainmain42,1238
