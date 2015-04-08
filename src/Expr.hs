@@ -8,7 +8,7 @@
  -}
 
 {-# LANGUAGE LambdaCase, TupleSections #-}
-{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE FlexibleContexts, RankNTypes #-}
 
 module Expr (
     Expr(..), Atom(..), Value(..), Op(..),
@@ -21,7 +21,7 @@ module Expr (
   import Control.Monad.Except (throwError)
   import Text.Read            (readMaybe)
   
-  import Text.Regex.TDFA  ((=~))
+  import Text.Regex.TDFA  (Regex, makeRegexM, match)
   
   import Query    (Selection(..), Predicate)
   import FileInfo (Day, FileOffset, name, date, size)
@@ -36,9 +36,10 @@ module Expr (
             | Val Value
   
   data Value = UnparsedVal String -- Build Expr Values with `UnparsedVal`, and
-             | StrVal  String     -- `typecheck` will parse it into the
-             | DayVal  Day        -- appropriate value type.
-             | SizeVal FileOffset
+             | StrVal   String     -- `typecheck` will parse it into the
+             | RegexVal Regex     -- appropriate value type.
+             | DayVal   Day
+             | SizeVal  FileOffset
   
   data Op = And
           | Or
@@ -72,10 +73,11 @@ module Expr (
             UnexpectedType u e -> concat ["unexpected ", u, "\nexpected ", e]
   
   
-  val     = Atom . Val
-  strVal  = val . StrVal
-  dayVal  = val . DayVal
-  sizeVal = val . SizeVal
+  val      = Atom . Val
+  strVal   = val . StrVal
+  regexVal = val . RegexVal
+  dayVal   = val . DayVal
+  sizeVal  = val . SizeVal
   
   quote s = "\"" ++ show s ++ "\""  
   invalid_val = InvalidValue . quote
@@ -101,14 +103,18 @@ module Expr (
                               NotEq   -> a'a'
                               LessEq  -> a'a'
                               GreatEq -> a'a'
-                              Like    -> name'strVal'
+                              Like    -> name'regexVal'
     where
       bool'bool' = (,) <$> typecheck x <*> typecheck x'
       
-      name'strVal'
+      name'regexVal'
         | (Atom a, Atom a') <- (x, x')
           = case (a, a') of
-              (Sel Name, Val (UnparsedVal s)) -> return (x, strVal s)
+              (Sel Name, Val (UnparsedVal s))
+                -> maybe (InvalidValue (show s) `expecting` "regex")
+                        (return . (x,) . regexVal)
+                      $ makeRegexM s -- TODO grab error message from `makeRegexM`.
+
               (Sel Name, atom) -> unexpected (quote atom) `expecting` "value"
               (atom, _) -> unexpected (quote atom) `expecting` "`name`"
         | otherwise = unexpected "expression" `expecting`
@@ -157,14 +163,14 @@ module Expr (
       LessEq  | (Atom a, Atom a') <- (x, x') -> (<=) `ord'ord'`  a $ a'
       GreatEq | (Atom a, Atom a') <- (x, x') -> (>=) `ord'ord'`  a $ a'
       
-      Like    | (Atom a, Atom a') <- (x, x') -> (=~) `name'str'` a $ a'
+      Like    | (Atom a, Atom a') <- (x, x') -> (flip match) `name'regex'` a $ a'
      
       _ -> error invalid_expr
     where      
       bool'bool' op x x' = \ fi -> expr_to_Pred x fi `op` expr_to_Pred x' fi
       
-      name'str' op (Sel Name) (Val (StrVal s)) = (`op` s) . name
-      name'str' _ _ _ = error invalid_expr
+      name'regex' op (Sel Name) (Val (RegexVal r)) = (`op` r) . name
+      name'regex' _ _ _ = error invalid_expr
       
       ord'ord' :: (forall a. (Ord a) => a -> a -> Bool)
                -> Atom -> Atom -> Predicate
