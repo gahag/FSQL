@@ -16,7 +16,6 @@ module Query (
   
   import Prelude hiding (Either(..))
   
-  import Control.Applicative  ((<$>), (<*>))
   import Control.Monad.Except (ExceptT, throwError)
   import Control.Monad.Trans  (lift)
   import Data.Function        (on)

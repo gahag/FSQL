@@ -7,14 +7,16 @@
  - of the BSD license.  See the LICENSE file for details.
  -}
 
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+
 {-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE FlexibleInstances, OverlappingInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module Debug.Instances where
   
   import Prelude hiding (Either(..))
   
-  import Query  (Query(..), Selection(..), Source(..), Join(..), Predicate)
+  import Query  (Query(..), Source(..), Join(..), Predicate)
   import Expr   (Expr(..), Op(..))
   
   
@@ -54,8 +56,8 @@ module Debug.Instances where
                  Right -> "right"
                  Full  -> "full"
   
-  instance Show Predicate where
+  instance {-# OVERLAPS #-} Show Predicate where
     show = const "Predicate"
   
-  instance Show (Maybe Predicate) where
+  instance {-# OVERLAPS #-} Show (Maybe Predicate) where
     show = maybe "Nothing" show

@@ -28,7 +28,6 @@ module FileInfo (
   import System.PosixCompat.Files (fileSize)
   
   -- Directory Contents
-  import Data.Functor     ((<$>))
   import Data.List        ((\\))
   import System.Directory (doesDirectoryExist, getDirectoryContents)
   import System.FilePath  ((</>))

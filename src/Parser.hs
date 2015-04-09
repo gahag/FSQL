@@ -11,8 +11,6 @@ module Parser (
     parse_fsql
   ) where
   
-  import Control.Applicative  ((<$>), (<*>), (<*), (*>))
-  
   import Text.Parsec  ((<?>), between, eof, optionMaybe, parse)
   
   import Query        (Query(..), Source(..))

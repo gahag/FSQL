@@ -17,7 +17,6 @@ module Expr (
   ) where
   
   import Control.Arrow        ((***))
-  import Control.Applicative  ((<$>), (<*>))
   import Control.Monad.Except (throwError)
   import Text.Read            (readMaybe)
   
@@ -36,7 +35,7 @@ module Expr (
             | Val Value
   
   data Value = UnparsedVal String -- Build Expr Values with `UnparsedVal`, and
-             | StrVal   String     -- `typecheck` will parse it into the
+             | StrVal   String    -- `typecheck` will parse it into the
              | RegexVal Regex     -- appropriate value type.
              | DayVal   Day
              | SizeVal  FileOffset
@@ -189,11 +188,11 @@ module Expr (
                 Size -> op_on (fromSizeVal *** size)
 
           
-          fromStrVal  = \case StrVal  s -> s; _ -> invalid_val "fromRaw"
-          fromDayVal  = \case DayVal  d -> d; _ -> invalid_val "fromDay"
-          fromSizeVal = \case SizeVal s -> s; _ -> invalid_val "fromSize"
+          fromStrVal  = \case StrVal  s -> s; _ -> invalid_value "fromRaw"
+          fromDayVal  = \case DayVal  d -> d; _ -> invalid_value "fromDay"
+          fromSizeVal = \case SizeVal s -> s; _ -> invalid_value "fromSize"
           
-          invalid_val fn = error $ "Expr." ++ fn ++ ": invalid value."
+          invalid_value fn = error $ "Expr." ++ fn ++ ": invalid value."
       
       
       invalid_expr = "Expr.expr_to_Pred: invalid expression"

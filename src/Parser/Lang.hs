@@ -14,7 +14,7 @@ module Parser.Lang where
   
   import Control.Arrow  (first)
   import Control.Monad  (mzero)
-  import Data.Functor   ((<$>), ($>))
+  import Data.Functor   (($>))
   
   import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)
   import Text.Parsec.Language (emptyDef)

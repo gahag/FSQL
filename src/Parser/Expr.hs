@@ -11,8 +11,6 @@ module Parser.Expr (
     fsql_expr
   ) where 
   
-  import Control.Applicative  ((<$>))
-  
   import Text.Parsec        (Parsec, (<|>), (<?>))
   import Text.Parsec.Expr   (buildExpressionParser)
   import Text.Parsec.Error  (Message(Message), newErrorMessage)
