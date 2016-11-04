@@ -13,14 +13,13 @@ module Main (
     main
   ) where
   
-  import Control.Arrow        (left)
   import Control.Monad        (unless)
-  import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
+  import Control.Monad.Except (runExceptT)
   import Data.Char            (isSpace)
   import Data.Function        (on)
   import Data.List            (intercalate, maximumBy, transpose)
   import Data.Version         (showVersion)
-
+  
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
   

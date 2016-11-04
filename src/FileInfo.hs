@@ -10,7 +10,7 @@
 {-# LANGUAGE LambdaCase #-}
 
 module FileInfo (
-    Day, FileStatus, FileOffset, FileInfo,
+    Day, FileStatus, FileSize, FileInfo,
     getFileStatus,
     name, date, size,
     getDirContents, getDirContentsRec
@@ -38,6 +38,8 @@ module FileInfo (
   -- Must keep the filename since the FileStatus can't provide it.
   type FileInfo = (String, FileStatus)
   
+  type FileSize = FileOffset
+  
   
   
   name :: FileInfo -> String
@@ -50,9 +52,11 @@ module FileInfo (
   size = fileSize . snd
   
   
+  getDirContents :: FilePath -> IO [FilePath]
   getDirContents dir = (\\ [".", ".."]) -- remove '.' and '..'
                         <$> getDirectoryContents dir
   
+  getDirContentsRec :: FilePath -> IO [FilePath]
   getDirContentsRec dir =
     do contents <- getDirContents dir
        paths <- (`mapM` contents) $

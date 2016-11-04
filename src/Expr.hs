@@ -23,7 +23,7 @@ module Expr (
   import Text.Regex.TDFA  (Regex, makeRegexM, match)
   
   import Query    (Selection(..), Predicate)
-  import FileInfo (Day, FileOffset, name, date, size)
+  import FileInfo (Day, FileSize, name, date, size)
   
   
   
@@ -38,7 +38,7 @@ module Expr (
              | StrVal   String    -- `typecheck` will parse it into the
              | RegexVal Regex     -- appropriate value type.
              | DayVal   Day
-             | SizeVal  FileOffset
+             | SizeVal  FileSize
   
   data Op = And
           | Or
