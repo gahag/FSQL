@@ -42,13 +42,9 @@ module Main (
                            args -> fetch_fsql . parse_fsql "command line"
                                                           $ unwords args
     where
-      putStrLn' = putStrLn . (++ "\n")
-      
-      pad xs = let len = length . maximumBy (compare `on` length) $ xs
-                in map (\ x -> x ++ replicate (len - length x) ' ') xs
+      putStrLn' s = putStrLn . (++ "\n")
       
       print_cols = putStr . unlines . map (intercalate "\t")
-                    . transpose . map pad . transpose
       
       
       -- lexeme : checks if a string equals to the especified lexeme.
