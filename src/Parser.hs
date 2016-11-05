@@ -7,6 +7,8 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module Parser (
     parse_fsql
   ) where
@@ -31,14 +33,15 @@ module Parser (
             *>  fsql_selections
             <?> "select statement"
   
-  fsql_source = (\ rec s -> maybe (Single s rec) $ flip uncurry (s, rec))
+  fsql_source = (\ rec s -> \case Just join -> join (Source s rec)
+                                  Nothing   -> Source s rec)
                   <$> fsql_recursive
                   <*  reserved "from"
                   <*> fsql_ident -- source (directory)
                   <*> optionMaybe fsql_join
                   <?> "from statement"
   
-  fsql_join = (\ j s' sel s -> Join j (s, s') sel) -- See fsql_source.
+  fsql_join = (\ j s' sel s -> Join j (s, Source s' $ recurse s) sel) -- See fsql_source.
            -- Swap s and s' because s' is the first source, and s is the second.
                 <$> fsql_joinType   -- join type
                 <*  reserved "join"

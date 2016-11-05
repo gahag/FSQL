@@ -13,8 +13,9 @@ module Main (
     main
   ) where
   
+  import Control.Arrow        (left)
   import Control.Monad        (unless)
-  import Control.Monad.Except (runExceptT)
+  import Control.Monad.Except (ExceptT(..), runExceptT)
   import Data.Char            (isSpace)
   import Data.Function        (on)
   import Data.List            (intercalate, maximumBy, transpose)
@@ -23,8 +24,9 @@ module Main (
   import System.IO          (hFlush, stdout)
   import System.Environment (getArgs)
   
-  import Query      (fetch_query)
-  import Parser     (parse_fsql)
+  import Query                 (Query, fetch_query)
+  import qualified Parser as P (parse_fsql)
+  
   import Paths_FSQL (version)
   
   
@@ -39,27 +41,32 @@ module Main (
       \Also, Double quotes must be escaped." ]
   
   main = getArgs >>= \case []   -> putStrLn usage >> command_loop
-                           args -> fetch_fsql . parse_fsql "command line"
-                                                          $ unwords args
+                           args -> print_fsql
+                                 $ fetch_fsql
+                               =<< parse_fsql "command line" (unwords args)
     where
-      putStrLn' s = putStrLn . (++ "\n")
-      
-      print_cols = putStr . unlines . map (intercalate "\t")
-      
-      
       -- lexeme : checks if a string equals to the especified lexeme.
-      lexeme l s | [(l', s')] <- lex s =  l == l'  &&  all isSpace s'
+      lexeme :: String -> String -> Bool
+      lexeme l s | [(l', s')] <- lex s =  l == l' && all isSpace s'
                  | otherwise = False
       
-      fetch_fsql = either (putStrLn' . show) do_query
       
-      do_query q = runExceptT (fetch_query q)
-               >>= either putStrLn' print_cols
+      parse_fsql :: String -> String -> ExceptT String IO Query
+      parse_fsql name source = ExceptT . return . left show
+                             $ P.parse_fsql name source
+      
+      fetch_fsql :: Query -> ExceptT String IO String
+      fetch_fsql q = unlines . map (intercalate "\t")
+                  <$> fetch_query q
+      
+      print_fsql :: ExceptT String IO String -> IO ()
+      print_fsql result = runExceptT result
+                      >>= either putStrLn putStr
       
       
       command_loop =
         do putStr "fsql> " >> hFlush stdout
            s <- getLine
            unless (lexeme "exit" s || lexeme "quit" s)
-            $ fetch_fsql (parse_fsql "interactive" s)
+            $ print_fsql (parse_fsql "interactive" s >>= fetch_fsql)
               >> command_loop

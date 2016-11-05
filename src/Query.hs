@@ -10,7 +10,7 @@
 {-# LANGUAGE LambdaCase, TupleSections #-}
 
 module Query (
-    Query(..), Selection(..), Source(..), Recurse, Join(..), Predicate,
+    Query(..), Selection(..), Source(..), JoinType(..), Predicate,
     fetch_query
   ) where
   
@@ -37,16 +37,15 @@ module Query (
                  | Size
   
   -- Source : Source directory for the query.
-  data Source = Single FilePath Recurse
-              | Join Join (FilePath, FilePath) Selection Recurse
+  data Source = Source { path    :: FilePath
+                       , recurse :: Bool     }
+              | Join JoinType (Source, Source) Selection -- Join two sources on selection
   
-  type Recurse = Bool
-  
-  data Join = Inner
-            | Left 
-            | Right
-            | Outer
-            | Full
+  data JoinType = Inner
+                | Left 
+                | Right
+                | Outer
+                | Full
   
   -- Predicate : Takes the FileInfo and returns if it should be filtered.
   type Predicate = FileInfo -> Bool
@@ -60,46 +59,48 @@ module Query (
   
   
   fetch_query :: Query -> ExceptT String IO [[String]]
-  fetch_query (Query sel source pred) = (<$> fetch_source source) $
-    sort . case pred of
+  fetch_query (Query sel source predicate) = (<$> fetch_source source) $
+    sort . case predicate of
             Nothing -> map (selectors sel)
             Just p  -> flip foldr [] $ \ x -> if p x then (selectors sel x :)
                                                      else id
   
   -- fetch_source --------------------------------------------------------------
   fetch_source :: Source -> ExceptT String IO [FileInfo]
-
-  fetch_source (Single s rec) = lift (doesDirectoryExist s) >>=
-    \case False -> throwError ("Error: Directory \"" ++ s ++ "\" not found!")
-          True  -> lift $ fetch_files s
-                      >>= mapM (\ n -> (n,) <$> getFileStatus (s </> n))
-    where
-      fetch_files = if rec then getDirContentsRec
-                           else getDirContents
   
-  fetch_source (Join j (s, s') sel rec) =
-    let eq_selector = case sel of Name -> (==) `on` name
-                                  Date -> (==) `on` date
-                                  Size -> (==) `on` size
-      in joiner j eq_selector
-          <$> fetch_source (Single s rec)
-          <*> fetch_source (Single s' rec)
+  fetch_source (Join joinType (s, s') sel) = joiner joinType (eq_selector sel)
+                                          <$> fetch_source s
+                                          <*> fetch_source s'
+  
+  fetch_source src = lift (doesDirectoryExist $ path src) >>=
+    \case False -> throwError ("Error: Directory \"" ++ path src ++ "\" not found!")
+          True  -> lift (fetch_files (path src) >>= mapM fetch_fileinfo)
+    where
+      fetch_files | recurse src = getDirContentsRec
+                  | otherwise   = getDirContents
+      
+      fetch_fileinfo fName = (fName,) <$> getFileStatus (path src </> fName)
   -- ---------------------------------------------------------------------------
   
+  selectors :: [Selection] -> (FileInfo -> [String])
+  -- Returns a function that extracts the selection info from the FileInfo.
+  -- The order of the selections is maintained.
+  selectors sels = \ fi -> map (`selector` fi) sels
+    where
+      selector = \case Name -> name
+                       Date -> show . date
+                       Size -> show . size
   
-  joiner :: Join -> (a -> a -> Bool) -> ([a] -> [a] -> [a])
+  eq_selector :: Selection -> (FileInfo -> FileInfo -> Bool)
+  eq_selector = \case Name -> (==) `on` name
+                      Date -> (==) `on` date
+                      Size -> (==) `on` size
+  
+  
+  joiner :: JoinType -> (a -> a -> Bool) -> ([a] -> [a] -> [a])
   -- Returns a function to make the join based on a equality comparer.
   joiner = \case Inner -> intersectBy
                  Left  -> deleteFirstsBy
                  Right -> flip . deleteFirstsBy
                  Outer -> \ f x x' -> joiner Left f x x' ++ joiner Right f x x'
                  Full  -> unionBy
-  
-  selectors :: [Selection] -> (FileInfo -> [String])
-  -- Returns a function that extracts the selection info from the FileInfo.
-  -- The selections are separated by a tab, and their order is maintained.
-  selectors sels fi = map (`selector` fi) sels
-    where
-      selector = \case Name -> name
-                       Date -> show . date
-                       Size -> show . size

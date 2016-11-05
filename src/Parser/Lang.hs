@@ -27,7 +27,7 @@ module Parser.Lang where
                                               , reservedOpNames, stringLiteral
                                               , whiteSpace                    )
   
-  import Query (Selection(..), Join(..))
+  import Query (Selection(..), JoinType(..))
   import Expr  (Expr(Not, Op), Op(..))
   
   
