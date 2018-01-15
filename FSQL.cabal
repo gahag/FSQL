@@ -8,7 +8,7 @@
 
 name:                FSQL
 version:             1.2
-synopsis:            FSQL is a tool for performing queries on the local filesystem with syntax similar to SQL.
+synopsis:            FSQL is a tool for querying a filesystem with syntax similar to SQL.
 description:         FSQL : File System Query Language is a tool for performing queries on the local filesystem with syntax similar to SQL.
 homepage:            https://github.com/gahag/FSQL
 license:             BSD3
@@ -19,7 +19,7 @@ copyright:           (C) 2015 gahag
 category:            Database
 build-type:          Simple
 extra-doc-files:     Specification
-cabal-version:       >=1.10
+cabal-version:       >=1.18
 
 executable fsql
   main-is:             Main.hs
@@ -29,7 +29,8 @@ executable fsql
                        Parser.Expr
                        Parser.Lang
                        Query
+                       Paths_FSQL
   other-extensions:    LambdaCase, TupleSections, RankNTypes
-  build-depends:       base >=4.7 && <5.0, mtl >=2.2 && <2.3, regex-tdfa >=1.2 && <1.3, unix-compat >=0.4 && <0.5, time >=1.4 && <1.7, directory >=1.2 && <1.3, filepath >=1.3 && <1.5, parsec >=3.1 && <3.2
+  build-depends:       base >=4.7 && <5.0, mtl >=2.2 && <2.3, regex-tdfa >=1.2 && <1.3, unix-compat >=0.4 && <0.6, time >=1.4 && <1.9, directory >=1.2 && <1.4, filepath >=1.3 && <1.5, parsec >=3.1 && <3.2
   hs-source-dirs:      src
   default-language:    Haskell2010
