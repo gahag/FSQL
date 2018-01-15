@@ -24,7 +24,7 @@ module Query (
   import System.Directory (doesDirectoryExist)
   import System.FilePath  ((</>))
   
-  import FileInfo (FileInfo, getFileStatus, name, date, size
+  import FileInfo (FileInfo, getSymbolicLinkStatus, name, date, size
                   , getDirContents, getDirContentsRec)
   
   
@@ -79,7 +79,7 @@ module Query (
       fetch_files | recurse src = getDirContentsRec
                   | otherwise   = getDirContents
       
-      fetch_fileinfo fName = (fName,) <$> getFileStatus (path src </> fName)
+      fetch_fileinfo fName = (fName,) <$> getSymbolicLinkStatus (path src </> fName)
   -- ---------------------------------------------------------------------------
   
   selectors :: [Selection] -> (FileInfo -> [String])

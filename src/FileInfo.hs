@@ -11,12 +11,12 @@
 
 module FileInfo (
     Day, FileStatus, FileSize, FileInfo,
-    getFileStatus,
+    getSymbolicLinkStatus,
     name, date, size,
     getDirContents, getDirContentsRec
   ) where
   
-  import System.PosixCompat.Files (FileStatus, getFileStatus)
+  import System.PosixCompat.Files (FileStatus, getSymbolicLinkStatus)
   
   -- Date
   import Data.Time                (Day, utctDay)
