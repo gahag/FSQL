@@ -7,16 +7,16 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE LambdaCase, TupleSections #-}
 
 module FileInfo (
     Day, FileStatus, FileSize, FileInfo,
-    getSymbolicLinkStatus,
     name, date, size,
-    getDirContents, getDirContentsRec
+    getDirInfo
   ) where
   
-  import System.PosixCompat.Files (FileStatus, getSymbolicLinkStatus)
+  import Control.Monad  (foldM)
+  import Control.Arrow  (first)
   
   -- Date
   import Data.Time                (Day, utctDay)
@@ -27,11 +27,11 @@ module FileInfo (
   import System.Posix.Types       (FileOffset)
   import System.PosixCompat.Files (fileSize)
   
-  -- Directory Contents
-  import Data.List        ((\\))
-  import System.Directory (doesDirectoryExist, getDirectoryContents)
-  import System.FilePath  ((</>))
-  
+  -- File and directory contents
+  import Data.List                ((\\))
+  import System.Directory         (doesDirectoryExist, getDirectoryContents)
+  import System.FilePath          ((</>))
+  import System.PosixCompat.Files (FileStatus, getSymbolicLinkStatus)
   
   
   -- FileInfo : (filename, FileStatus)
@@ -41,37 +41,38 @@ module FileInfo (
   type FileSize = FileOffset
   
   
-  
   name :: FileInfo -> String
   name = fst
   
   date :: FileInfo -> Day
   date = utctDay . posixSecondsToUTCTime . realToFrac . modificationTime . snd
   
-  size :: FileInfo -> FileOffset
+  size :: FileInfo -> FileSize
   size = fileSize . snd
   
   
-  getDirContents :: FilePath -> IO [FilePath]
-  getDirContents dir = (\\ [".", ".."]) -- remove '.' and '..'
-                        <$> getDirectoryContents dir
+  -- getDirInfo --------------------------------------------------------------------------
+  getDirInfo :: FilePath      -- The directory to list.
+             -> Bool          -- Wether to list recursively.
+             -> IO [FileInfo]
   
-  getDirContentsRec :: FilePath -> IO [FilePath]
-  getDirContentsRec dir =
-    do contents <- getDirContents dir
-       paths <- (`mapM` contents) $
-                  \ name -> doesDirectoryExist (dir </> name)
-                        >>= \case True  -> getDirContentsRec' dir name
-                                  False -> return [name]
-       return (concat paths)
+  getDirInfo path False = (\\ [".", ".."]) <$> getDirectoryContents path
+                      >>= mapM (\ fname -> (fname,) <$> getSymlinkStatus (path </> fname))
     where
-      getDirContentsRec' root dir =
-        do contents <- getDirContents (root </> dir)
-           paths <- (`mapM` contents) $
-                      \ name -> let path = dir </> name in
-                                doesDirectoryExist (root </> path)
-                            >>= \case True  -> getDirContentsRec' root path
-                                      False -> return [path]
-           return $
-            if null contents then [dir]
-                             else concat paths
+      getSymlinkStatus = getSymbolicLinkStatus
+  
+  getDirInfo path True = getDirInfo' path ""
+    where
+      getDirInfo' :: FilePath -> FilePath -> IO [FileInfo]
+      getDirInfo' root path =
+        getDirInfo (root </> path) False -- List the files in the path, then recurse for
+          >>= foldM (                    -- the directories.
+                \ fs f -> let f' = first (path </>) f -- Prefix the path to every filename
+                              fs' = fs ++ [f']        -- and add it to the list.
+                          in (fs' ++) <$> do isdir <- dirExists (root </> name f')
+                                             if isdir then getDirInfo' root (name f')
+                                                      else return [] -- file already added.
+              ) []
+      
+      dirExists = doesDirectoryExist
+  -- -------------------------------------------------------------------------------------
