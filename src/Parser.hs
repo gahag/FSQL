@@ -14,7 +14,7 @@ module Parser (
     fsql_parse
   ) where
   
-  import Control.Monad.Except (ExceptT(..), Except)
+  import Control.Monad.Except (ExceptT(..))
   
   import Text.Parsec        (Parsec, (<?>), between, eof, optionMaybe, parse)
   import Text.Parsec.Error  (ParseError)

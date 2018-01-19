@@ -21,7 +21,7 @@ module Main (
   import FSQL (fsql_run)
   import Paths_FSQL (version)
   
-  
+  usage :: String
   usage = unlines
     [ "FSQL v" ++ showVersion version ++ " - hosted at \
       \https://github.com/gahag/FSQL"
@@ -31,5 +31,6 @@ module Main (
       \ should be quoted because they may be interpreted as shell commands. \
       \Also, Double quotes must be escaped." ]
   
+  main :: IO ()
   main = getArgs >>= \case []   -> putStrLn usage >> fsql_cli
                            args -> fsql_run "command line" (unwords args)

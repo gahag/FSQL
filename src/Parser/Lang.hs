@@ -12,8 +12,6 @@ module Parser.Lang where
   
   import Prelude hiding (Either(..))
   
-  import Control.Arrow  (first)
-  import Control.Monad  (mzero)
   import Data.Functor   (($>))
   
   import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)

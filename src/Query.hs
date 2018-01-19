@@ -18,7 +18,7 @@ module Query (
   
   import Control.Monad.Except (ExceptT, lift, throwError)
   import Data.Function        (on)
-  import Data.List            (sort, deleteFirstsBy, intersectBy, unionBy)
+  import Data.List            (deleteFirstsBy, intersectBy, unionBy)
   
   import System.Directory (doesDirectoryExist)
   

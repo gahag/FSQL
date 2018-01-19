@@ -14,12 +14,13 @@ module FSQL (
   ) where
   
   import Control.Arrow        (left)
-  import Control.Monad.Except (ExceptT(..), catchError, lift, runExceptT, withExceptT)
+  import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
   import Data.List            (intercalate)
   
+  import System.IO        (hPutStrLn, stderr)
   import System.IO.Error  (IOError, tryIOError)
   
-  import Query  (Query, fetch_query)
+  import Query  (fetch_query)
   import Parser (ParseError, fsql_parse)
   
   
@@ -33,8 +34,9 @@ module FSQL (
                            result <- withExceptT FetchErr $ fetch_query query
                            print_result result
                         `handleError` (
-                          \case ParseErr e -> putStrLn "Parse error:" >> print e
-                                FetchErr e -> putStrLn "IO error:"    >> putStrLn e
+                          \case ParseErr e -> putErr "Parse error:" >> putErr (show e)
+                                FetchErr e -> putErr "IO error:"    >> putErr e
+                                IOErr    _ -> putErr "Failed to print to stdout!"
                         )
     where
       print_result :: [[String]] -> ExceptT Error IO ()
@@ -43,3 +45,6 @@ module FSQL (
       
       handleError :: (Monad m) => ExceptT e m a -> (e -> m a) -> m a
       handleError e f = runExceptT e >>= either f return
+      
+      putErr :: String -> IO ()
+      putErr = hPutStrLn stderr
