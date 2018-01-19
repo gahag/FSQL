@@ -7,25 +7,25 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
+{-# LANGUAGE LambdaCase #-}
+
 module CLI (
     fsql_cli
   ) where
   
-  import Control.Monad  (unless)
-  import Data.Char      (isSpace)
+  import Control.Monad.Trans  (lift)
   
-  import System.IO  (hFlush, stdout)
+  import System.Console.Haskeline (InputT, defaultSettings, getInputLine, runInputT)
   
   import FSQL (fsql_run)
   
   
   fsql_cli :: IO ()
-  fsql_cli = do putStr "fsql> " >> hFlush stdout
-                s <- getLine
-                unless (lexeme "exit" s || lexeme "quit" s)
-                 $ fsql_run "interactive" s >> fsql_cli
-    where
-      -- lexeme : checks if a string equals to the especified lexeme.
-      lexeme :: String -> String -> Bool
-      lexeme l s | [(l', s')] <- lex s =  l == l' && all isSpace s'
-                 | otherwise = False
+  fsql_cli = runInputT defaultSettings loop
+   where
+     loop :: InputT IO ()
+     loop = getInputLine "fsql> "
+        >>= \case Nothing     -> lift (putStrLn "Leaving fsql.") -- EOF
+                  Just "exit" -> return ()
+                  Just "quit" -> return ()
+                  Just input  -> lift (fsql_run "interactive" input) >> loop

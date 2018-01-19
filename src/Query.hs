@@ -16,8 +16,7 @@ module Query (
   
   import Prelude hiding (Either(..))
   
-  import Control.Monad.Except (ExceptT, throwError)
-  import Control.Monad.Trans  (lift)
+  import Control.Monad.Except (ExceptT, lift, throwError)
   import Data.Function        (on)
   import Data.List            (sort, deleteFirstsBy, intersectBy, unionBy)
   

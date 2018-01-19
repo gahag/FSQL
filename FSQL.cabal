@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 22d98a53b3d6a633a0dc18b679182fd8109ca8a4d819e57360be382691df0223
+-- hash: 3395aeb50ac4723a3e7ce64c1c3d475714a925d5ad2944ad8acc2f9658111e76
 
 name:           FSQL
 version:        1.2
@@ -38,6 +38,7 @@ executable fsql
       base
     , directory
     , filepath
+    , haskeline
     , mtl
     , parsec
     , regex-tdfa

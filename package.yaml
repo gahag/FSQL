@@ -35,13 +35,14 @@ other-extensions:
 
 dependencies:
 - base
-- mtl
-- regex-tdfa
-- unix-compat
-- time
 - directory
 - filepath
+- haskeline
+- mtl
 - parsec
+- regex-tdfa
+- time
+- unix-compat
 
 executables:
   fsql:
