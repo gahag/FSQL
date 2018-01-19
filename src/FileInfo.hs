@@ -7,7 +7,7 @@
  - of the BSD license. See the LICENSE file for details.
  -}
 
-{-# LANGUAGE LambdaCase, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 
 module FileInfo (
     Day, FileStatus, FileSize, FileInfo,

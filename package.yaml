@@ -1,0 +1,49 @@
+# FSQL : package.yaml -- Package file for hpack
+#
+# Copyright (C) 2015 gahag
+# All rights reserved.
+#
+# This software may be modified and distributed under the terms
+# of the BSD license. See the LICENSE file for details.
+
+name: FSQL
+
+version: '1.2'
+
+synopsis: FSQL is a tool for querying a filesystem with syntax similar to SQL.
+description: ! 'FSQL : File System Query Language is a tool for performing queries
+  on the local filesystem with syntax similar to SQL.'
+
+category: Database
+
+homepage: https://github.com/gahag/FSQL
+
+author: gahag
+
+maintainer: gabriel.s.b@live.com
+
+license: BSD3
+copyright: (C) 2015 gahag
+
+
+other-extensions:
+- LambdaCase
+- FlexibleInstances
+- FlexibleContexts
+- TupleSections
+- RankNTypes
+
+dependencies:
+- base
+- mtl
+- regex-tdfa
+- unix-compat
+- time
+- directory
+- filepath
+- parsec
+
+executables:
+  fsql:
+    main: Main.hs
+    source-dirs: src

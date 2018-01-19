@@ -16,7 +16,7 @@ module Debug.Instances where
   
   import Prelude hiding (Either(..))
   
-  import Query  (Query(..), Source(..), Join(..), Predicate)
+  import Query  (Query(..), Source(..), JoinType(..), Predicate)
   import Expr   (Expr(..), Op(..))
   
   
@@ -41,15 +41,15 @@ module Debug.Instances where
     show (Query ss s p) = concat ["query ", show ss, " ", show s , " ", show p]
   
   instance Show Source where
-    show = \case (Single s rec)     -> show_rec rec (show s)
-                 (Join j s sel rec) -> show_rec rec $
+    show = \case (Source rec s)     -> show_rec rec (show s)
+                 (Join rec j s sel) -> show_rec rec $
                                         concat [show j, " join ", show s, " on "
                                                , show sel]
       where
         show_rec rec | rec       = ("recursive " ++)
                      | otherwise = id
   
-  instance Show Join where
+  instance Show JoinType where
     show = \case Inner -> "inner"
                  Outer -> "outer"
                  Left  -> "left"
