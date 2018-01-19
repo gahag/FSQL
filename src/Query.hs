@@ -80,8 +80,7 @@ module Query (
   fetch_path :: FilePath -> Bool -> ExceptT String IO [FileInfo]
   fetch_path path rec = lift (doesDirectoryExist path)
                     >>= \case True  -> lift (getDirInfo path rec)
-                              False -> throwError $ "Error: Directory \""
-                                                  ++ path ++ "\" not found!"
+                              False -> throwError $ "Directory \"" ++ path ++ "\" not found!"
   
   fetch_source :: Source -> ExceptT String IO [FileInfo]
   fetch_source (Source rec path) = fetch_path path rec

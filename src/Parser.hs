@@ -10,8 +10,11 @@
 {-# LANGUAGE LambdaCase #-}
 
 module Parser (
-    parse_fsql
+    ParseError,
+    fsql_parse
   ) where
+  
+  import Control.Monad.Except (ExceptT(..), Except)
   
   import Text.Parsec        (Parsec, (<?>), between, eof, optionMaybe, parse)
   import Text.Parsec.Error  (ParseError)
@@ -26,8 +29,10 @@ module Parser (
   type Parser = Parsec String () -- String as stream type, no user state.
   
   
-  parse_fsql :: String -> String -> Either ParseError Query
-  parse_fsql = parse (between whiteSpace eof fsql)
+  fsql_parse :: (Monad m) => String  -- Source name
+                          -> String  -- Input
+                          -> ExceptT ParseError m Query
+  fsql_parse name = ExceptT . return . parse (between whiteSpace eof fsql) name
   
   
   fsql :: Parser Query
