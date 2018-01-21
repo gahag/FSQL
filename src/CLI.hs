@@ -13,19 +13,51 @@ module CLI (
     fsql_cli
   ) where
   
+  import Data.Version         (showVersion)
+  import Control.Monad        (unless, when)
   import Control.Monad.Trans  (lift)
   
-  import System.Console.Haskeline (InputT, defaultSettings, getInputLine, runInputT)
+  import System.IO                (hIsTerminalDevice, stdin, stdout)
+  import System.Console.Haskeline (InputT, defaultSettings
+                                  , getInputLine, runInputT, outputStrLn)
   
-  import FSQL (fsql_run)
+  import FSQL       (fsql_run)
+  import Paths_FSQL (version)
+  
+  
+  usage :: String
+  usage = unlines
+    [ "FSQL v" ++ showVersion version ++ " - hosted at https://github.com/gahag/FSQL"
+    , "Enter query statement or quit|exit to leave."
+    , "FSQL can also be used from the command line: fsql <query>"
+    , "Please note that when using FSQL from the command line, where statements\
+      \ should be quoted because they may be interpreted as shell commands. \
+      \Also, Double quotes must be escaped." ]
   
   
   fsql_cli :: IO ()
-  fsql_cli = runInputT defaultSettings loop
-   where
-     loop :: InputT IO ()
-     loop = getInputLine "fsql> "
-        >>= \case Nothing     -> lift (putStrLn "Leaving fsql.") -- EOF
-                  Just "exit" -> return ()
-                  Just "quit" -> return ()
-                  Just input  -> lift (fsql_run "interactive" input) >> loop
+  -- runInputT: Uses terminal-style interaction if stdin is connected to a terminal and
+  -- has echoing enabled. Otherwise (e.g., if stdin is a pipe), it uses file-style interaction.
+  fsql_cli = runInputT defaultSettings
+             $ do stdinTTY  <- lift $ hIsTerminalDevice stdin
+                  stdoutTTY <- lift $ hIsTerminalDevice stdout
+                  -- If neither stdin or stdout are in the terminal, ommit usage:
+                  when (stdinTTY || stdoutTTY) (outputStrLn usage)
+                  loop stdinTTY
+    where
+      loop :: Bool -> InputT IO ()
+      loop stdinTTY = getInputLine "fsql> "
+                  >>= \case Nothing -> do -- Caught EOF.
+                                        -- When in a tty, Ctrl-D (EOF) breaks the line.
+                                        -- Otherwise, output the line break manually:
+                                        unless stdinTTY $ outputStrLn ""
+                                        outputStrLn "Leaving fsql."
+                            
+                            Just "exit" -> return ()
+                            Just "quit" -> return ()
+                            
+                            Just input -> do -- Query input.
+                                            -- Echo the input if not already echoed:
+                                            unless stdinTTY $ outputStrLn input
+                                            lift $ fsql_run "interactive" input
+                                            loop stdinTTY

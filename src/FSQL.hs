@@ -41,7 +41,7 @@ module FSQL (
     where
       print_result :: [[String]] -> ExceptT Error IO ()
       print_result = ExceptT . fmap (left IOErr) . tryIOError
-                   . putStr . unlines . map (intercalate "\t")
+                   . putStrLn . unlines . map (intercalate "\t")
       
       handleError :: (Monad m) => ExceptT e m a -> (e -> m a) -> m a
       handleError e f = runExceptT e >>= either f return
