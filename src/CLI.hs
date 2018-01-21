@@ -21,13 +21,13 @@ module CLI (
   import System.Console.Haskeline (InputT, defaultSettings
                                   , getInputLine, runInputT, outputStrLn)
   
-  import FSQL       (fsql_run)
-  import Paths_FSQL (version)
+  import FSQL     (fsql_run)
+  import Version  (aboutMsg)
   
   
   usage :: String
   usage = unlines
-    [ "FSQL v" ++ showVersion version ++ " - hosted at https://github.com/gahag/FSQL"
+    [ aboutMsg
     , "Enter query statement or quit|exit to leave."
     , "FSQL can also be used from the command line: fsql <query>"
     , "Please note that when using FSQL from the command line, where statements\

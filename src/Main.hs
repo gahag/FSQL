@@ -15,10 +15,14 @@ module Main (
   
   import System.Environment (getArgs)
   
-  import CLI  (fsql_cli)
-  import FSQL (fsql_run)
+  import CLI      (fsql_cli)
+  import FSQL     (fsql_run)
+  import Version  (aboutMsg)
   
   
   main :: IO ()
-  main = getArgs >>= \case []   -> fsql_cli
-                           args -> fsql_run "command line" (unwords args)
+  main = getArgs >>= \case []              -> fsql_cli
+                           [v] | version v -> putStrLn aboutMsg
+                           args            -> fsql_run "command line" (unwords args)
+    where
+      version v = v `elem` ["-v", "--version"]
