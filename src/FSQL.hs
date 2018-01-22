@@ -37,9 +37,9 @@ module FSQL (
        result <- withExceptT FetchErr $ fetch_query query
        print_result (unlines $ map (intercalate "\t") result) $> ExitSuccess
     `handleError` (
-      \case ParseErr e -> putErr ("Parse error:\n" ++ show e) $> ExitFailure 1
-            FetchErr e -> putErr ("IO error:\n" ++ show e)    $> ExitFailure 2
-            IOErr    _ -> putErr "Failed to print to stdout!" $> ExitFailure 3
+      \case ParseErr e -> putErr ("Parse error:\n" ++ show e)  $> ExitFailure 1
+            FetchErr e -> putErr ("IO error:\n" ++ show e)     $> ExitFailure 2
+            IOErr    e -> putErr ("Output error:\n" ++ show e) $> ExitFailure 3
     )
     where
       print_result :: String -> ExceptT Error IO ()
