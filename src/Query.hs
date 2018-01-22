@@ -97,8 +97,8 @@ module Query (
     where
       convert :: IOError -> FetchError
       convert e | isInappropriateType e = NotADirectory (ioeGetFileName e)
-                | isPermissionError e   = Permission (ioeGetFileName e)
                 | isDoesNotExistError e = NotFound (ioeGetFileName e)
+                | isPermissionError e   = Permission (ioeGetFileName e)
                 | otherwise             = IOErr e
       
       isInappropriateType e = ioeGetErrorType e == InappropriateType

@@ -30,10 +30,10 @@ module FileInfo (
   
   -- File and directory contents
   import Data.List                ((\\))
-  import System.Directory         (doesDirectoryExist, getDirectoryContents)
-  import System.FilePath          ((</>))
+  import System.Directory         (getDirectoryContents, getHomeDirectory)
+  import System.FilePath          ((</>), normalise)
   import System.IO.Error          (IOError, tryIOError)
-  import System.PosixCompat.Files (FileStatus, getSymbolicLinkStatus)
+  import System.PosixCompat.Files (FileStatus, getSymbolicLinkStatus, isDirectory)
   
   
   -- FileInfo : (filename, FileStatus)
@@ -52,6 +52,9 @@ module FileInfo (
   size :: FileInfo -> FileSize
   size = fileSize . snd
   
+  isDir :: FileInfo -> Bool
+  isDir = isDirectory . snd
+  
   
   -- getDirInfo --------------------------------------------------------------------------
   -- The IOError might be:
@@ -62,35 +65,47 @@ module FileInfo (
   -- UnsupportedOperation : The operating system has no notion of current working directory.
   -- InappropriateType    : The path refers to an object that is not a directory.
   
-  getDirInfo :: FilePath        -- The directory to list.
-             -> Bool            -- Wether to list recursively.
-             -> ExceptT IOError IO [FileInfo]
+  getDirInfo, getDirInfo' :: FilePath        -- The directory to list.
+                          -> Bool            -- Wether to list recursively.
+                          -> ExceptT IOError IO [FileInfo]
   
   
-  getDirInfo path False = listDirectory path >>= mapM getFileInfo
+  -- Handle the tilde as a synonym to the home directory:
+  getDirInfo path@('~':_) rec = do path' <- tildeExpand path
+                                   getDirInfo' path' rec
+  
+  getDirInfo path rec = getDirInfo' path rec
+  
+  
+  getDirInfo' path False = (\\ [".", ".."]) <$> ioExcept (getDirectoryContents path)
+                       >>= mapM getFileInfo
     where
-      ioExcept :: IO a -> ExceptT IOError IO a
-      ioExcept = ExceptT . tryIOError
-      
       getFileInfo :: String -> ExceptT IOError IO FileInfo
       getFileInfo fname = (fname,) <$> ioExcept (getSymbolicLinkStatus (path </> fname))
-      
-      listDirectory :: FilePath -> ExceptT IOError IO [FilePath]
-      listDirectory path = (\\ [".", ".."]) <$> ioExcept (getDirectoryContents path)
   
-  
-  getDirInfo path True = getDirInfo' path ""
+  getDirInfo' path True = recDirInfo path ""
     where
-      getDirInfo' :: FilePath -> FilePath -> ExceptT IOError IO [FileInfo]
-      getDirInfo' root path =
+      recDirInfo :: FilePath -> FilePath -> ExceptT IOError IO [FileInfo]
+      recDirInfo root path =
         getDirInfo (root </> path) False -- List the files in the path, then recurse for
           >>= foldM (                    -- the directories.
                 \ fs f -> let f' = first (path </>) f -- Prefix the path to every filename
                               fs' = fs ++ [f']        -- and add it to the list.
-                          in (fs' ++) <$> do isdir <- dirExists (root </> name f')
-                                             if isdir then getDirInfo' root (name f')
-                                                      else return [] -- file already added.
+                          in
+                            if isDir f' then (fs' ++) <$> recDirInfo root (name f')
+                                        else return fs'
               ) []
-      
-      dirExists = lift . doesDirectoryExist
+  
+  
+  tildeExpand :: FilePath -> ExceptT IOError IO FilePath
+  tildeExpand "~"            = ioExcept getHomeDirectory
+  tildeExpand ('~':'/':path) = let path' = tail      -- Remove the leading "/"
+                                         . normalise -- Remove excess separators
+                                         $ '/':path  -- Make sure there is at least "/"
+                                in (</> path') <$> ioExcept getHomeDirectory
+  tildeExpand path = return path
+  
+  
+  ioExcept :: IO a -> ExceptT IOError IO a
+  ioExcept = ExceptT . tryIOError
   -- -------------------------------------------------------------------------------------
