@@ -13,7 +13,6 @@ module CLI (
     fsql_cli
   ) where
   
-  import Data.Version         (showVersion)
   import Control.Monad        (unless, when)
   import Control.Monad.Trans  (lift)
   
@@ -59,5 +58,5 @@ module CLI (
                             Just input -> do -- Query input.
                                             -- Echo the input if not already echoed:
                                             unless stdinTTY $ outputStrLn input
-                                            lift $ fsql_run "interactive" input
+                                            _ <- lift $ fsql_run "interactive" input
                                             loop stdinTTY

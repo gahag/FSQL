@@ -13,35 +13,37 @@ module FSQL (
     fsql_run
   ) where
   
+  import Data.Functor         (($>))
   import Control.Arrow        (left)
   import Control.Monad.Except (ExceptT(..), runExceptT, withExceptT)
   import Data.List            (intercalate)
   
+  import System.Exit      (ExitCode(..))
   import System.IO        (hPutStrLn, stderr)
   import System.IO.Error  (IOError, tryIOError)
   
-  import Query  (fetch_query)
+  import Query  (FetchError, fetch_query)
   import Parser (ParseError, fsql_parse)
   
   
   data Error = ParseErr ParseError
-             | FetchErr String
+             | FetchErr FetchError
              | IOErr    IOError
   
   
-  fsql_run :: String -> String -> IO ()
-  fsql_run name input = do query  <- withExceptT ParseErr $ fsql_parse name input
-                           result <- withExceptT FetchErr $ fetch_query query
-                           print_result result
-                        `handleError` (
-                          \case ParseErr e -> putErr "Parse error:" >> putErr (show e)
-                                FetchErr e -> putErr "IO error:"    >> putErr e
-                                IOErr    _ -> putErr "Failed to print to stdout!"
-                        )
+  fsql_run :: String -> String -> IO ExitCode
+  fsql_run name input =
+    do query  <- withExceptT ParseErr $ fsql_parse name input
+       result <- withExceptT FetchErr $ fetch_query query
+       print_result (unlines $ map (intercalate "\t") result) $> ExitSuccess
+    `handleError` (
+      \case ParseErr e -> putErr ("Parse error:\n" ++ show e) $> ExitFailure 1
+            FetchErr e -> putErr ("IO error:\n" ++ show e)    $> ExitFailure 2
+            IOErr    _ -> putErr "Failed to print to stdout!" $> ExitFailure 3
+    )
     where
-      print_result :: [[String]] -> ExceptT Error IO ()
-      print_result = ExceptT . fmap (left IOErr) . tryIOError
-                   . putStrLn . unlines . map (intercalate "\t")
+      print_result :: String -> ExceptT Error IO ()
+      print_result = ExceptT . fmap (left IOErr) . tryIOError . putStrLn
       
       handleError :: (Monad m) => ExceptT e m a -> (e -> m a) -> m a
       handleError e f = runExceptT e >>= either f return

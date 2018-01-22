@@ -11,16 +11,21 @@
 
 module Query (
     Query(..), Selection(..), Source(..), JoinType(..), Predicate,
+    FetchError(..),
     fetch_query
   ) where
   
   import Prelude hiding (Either(..))
   
-  import Control.Monad.Except (ExceptT, lift, throwError)
+  import Control.Monad.Except (ExceptT, withExceptT)
   import Data.Function        (on)
   import Data.List            (deleteFirstsBy, intersectBy, unionBy)
   
-  import System.Directory (doesDirectoryExist)
+  import System.IO.Error  (ioeGetFileName, ioeGetErrorType
+                          , isDoesNotExistError, isPermissionError)
+  
+  import GHC.IO.Exception (IOErrorType(InappropriateType)) -- GHC specific error thrown
+                                                           -- by getDirectoryContents.
   
   import FileInfo (FileInfo, name, date, size, getDirInfo)
   
@@ -32,6 +37,11 @@ module Query (
   data Selection = Name
                  | Date
                  | Size
+  
+  instance Show Selection where
+    show = \case Name -> "name"
+                 Date -> "date"
+                 Size -> "size"
   
   -- Source : Source directory for the query.
   data Source = Source Bool      -- Wether to recursively fetch.
@@ -51,15 +61,21 @@ module Query (
   type Predicate = FileInfo -> Bool
   
   
-  instance Show Selection where
-    show = \case Name -> "name"
-                 Date -> "date"
-                 Size -> "size"
+  data FetchError = NotADirectory (Maybe FilePath)
+                  | NotFound (Maybe FilePath)
+                  | Permission (Maybe FilePath)
+                  | IOErr IOError
+  
+  instance Show FetchError where
+    show (NotADirectory p) = "Not a directory" ++ maybe "." (": " ++) p
+    show (NotFound p)      = "No such file or directory" ++ maybe "." (": " ++) p
+    show (Permission p)    = "Permission denied" ++ maybe "." (": " ++) p
+    show (IOErr e)         = show e
   
   
   
   -- fetch_query -------------------------------------------------------------------------
-  fetch_query :: Query -> ExceptT String IO [[String]]
+  fetch_query :: Query -> ExceptT FetchError IO [[String]]
   fetch_query (Query sel src pred) = map (selectors sel)
                                    . case pred of Nothing -> id
                                                   Just p  -> filter p
@@ -76,12 +92,19 @@ module Query (
   -- -------------------------------------------------------------------------------------
   
   -- fetch_source ------------------------------------------------------------------------
-  fetch_path :: FilePath -> Bool -> ExceptT String IO [FileInfo]
-  fetch_path path rec = lift (doesDirectoryExist path)
-                    >>= \case True  -> lift (getDirInfo path rec)
-                              False -> throwError $ "Directory \"" ++ path ++ "\" not found!"
+  fetch_path :: FilePath -> Bool -> ExceptT FetchError IO [FileInfo]
+  fetch_path path rec = withExceptT convert (getDirInfo path rec)
+    where
+      convert :: IOError -> FetchError
+      convert e | isInappropriateType e = NotADirectory (ioeGetFileName e)
+                | isPermissionError e   = Permission (ioeGetFileName e)
+                | isDoesNotExistError e = NotFound (ioeGetFileName e)
+                | otherwise             = IOErr e
+      
+      isInappropriateType e = ioeGetErrorType e == InappropriateType
   
-  fetch_source :: Source -> ExceptT String IO [FileInfo]
+  
+  fetch_source :: Source -> ExceptT FetchError IO [FileInfo]
   fetch_source (Source rec path) = fetch_path path rec
   fetch_source (Join rec joinType (p, p') s) = joiner joinType (eq_selector s)
                                             <$> fetch_path p  rec

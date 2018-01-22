@@ -13,7 +13,10 @@ module Main (
     main
   ) where
   
+  import Data.Functor (($>))
+  
   import System.Environment (getArgs)
+  import System.Exit        (ExitCode(..), exitWith)
   
   import CLI      (fsql_cli)
   import FSQL     (fsql_run)
@@ -21,8 +24,11 @@ module Main (
   
   
   main :: IO ()
-  main = getArgs >>= \case []              -> fsql_cli
-                           [v] | version v -> putStrLn aboutMsg
-                           args            -> fsql_run "command line" (unwords args)
+  main = getArgs >>= fsql_main >>= exitWith
+  
+  fsql_main :: [String] -> IO ExitCode
+  fsql_main = \case []              -> fsql_cli $> ExitSuccess
+                    [v] | version v -> putStrLn aboutMsg $> ExitSuccess
+                    args            -> fsql_run "command line" (unwords args)
     where
       version v = v `elem` ["-v", "--version"]
