@@ -17,7 +17,7 @@ module FileInfo (
   
   import Control.Arrow        (first)
   import Control.Monad        (foldM)
-  import Control.Monad.Except (ExceptT(..), lift)
+  import Control.Monad.Except (ExceptT(..))
   
   -- Date
   import Data.Time                (Day, utctDay)

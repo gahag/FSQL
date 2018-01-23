@@ -16,17 +16,14 @@ module Parser (
   
   import Control.Monad.Except (ExceptT(..))
   
-  import Text.Parsec        (Parsec, (<?>), between, eof, optionMaybe, parse)
+  import Text.Parsec        ((<?>), between, eof, optionMaybe, parse)
   import Text.Parsec.Error  (ParseError)
   
   import Query        (Query(..), Source(..), Predicate, Selection)
   import Expr         (expr_to_Pred)
-  import Parser.Expr  (fsql_expr)
-  import Parser.Lang  (fsql_ident, fsql_joinType, fsql_recursive, fsql_selection
-                      , fsql_selections, reserved, whiteSpace)
-  
-  
-  type Parser = Parsec String () -- String as stream type, no user state.
+  import Parser.Base  (Parser)
+  import Parser.Lang  (fsql_expr, fsql_ident, fsql_joinType, fsql_recursive
+                      , fsql_selection, fsql_selections, reserved, whiteSpace)
   
   
   fsql_parse :: (Monad m) => String  -- Source name

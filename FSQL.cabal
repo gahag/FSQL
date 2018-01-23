@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dcdcb850627003193ae3a691e33732d9113f97733c1e444584143a39e18fdd6d
+-- hash: 1d474a16dd55a328658b191c01c387149558efc713849ac48d471e494a608d0c
 
 name:           FSQL
 version:        1.2
@@ -27,7 +27,7 @@ executable fsql
       FileInfo
       FSQL
       Parser
-      Parser.Expr
+      Parser.Base
       Parser.Lang
       Query
       Version
