@@ -27,22 +27,28 @@ copyright: (C) 2015 gahag
 
 
 other-extensions:
-- LambdaCase
-- FlexibleInstances
-- FlexibleContexts
-- TupleSections
-- RankNTypes
+  - LambdaCase
+  - TupleSections
+  - GADTs
+  - RankNTypes
+  - DataKinds
+  - KindSignatures
+  - MultiParamTypeClasses
+  - FlexibleInstances
+  - FlexibleContexts
 
 dependencies:
-- base
-- directory
-- filepath
-- haskeline
-- mtl
-- parsec
-- regex-tdfa
-- time
-- unix-compat
+  - base
+  - directory
+  - filepath
+  - haskeline
+  - mtl
+  - parsec
+  - regex-tdfa
+  - time
+  - unix-compat
+
+ghc-options: -Wall -Wno-name-shadowing
 
 executables:
   fsql:

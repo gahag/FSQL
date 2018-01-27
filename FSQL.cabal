@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1d474a16dd55a328658b191c01c387149558efc713849ac48d471e494a608d0c
+-- hash: a385af90c48ac705938af39ee2648dd0d2b702a59ea705130664f5143fe591a6
 
 name:           FSQL
 version:        1.2
@@ -22,19 +22,23 @@ executable fsql
   main-is: Main.hs
   other-modules:
       CLI
-      Debug.Instances
       Expr
+      Expr.TypeChecker
+      Expr.Typed
+      Expr.Untyped
       FileInfo
       FSQL
       Parser
       Parser.Base
       Parser.Lang
       Query
+      Regex
       Version
       Paths_FSQL
   hs-source-dirs:
       src
-  other-extensions: LambdaCase FlexibleInstances FlexibleContexts TupleSections RankNTypes
+  other-extensions: LambdaCase TupleSections GADTs RankNTypes DataKinds KindSignatures MultiParamTypeClasses FlexibleInstances FlexibleContexts
+  ghc-options: -Wall -Wno-name-shadowing
   build-depends:
       base
     , directory

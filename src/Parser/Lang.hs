@@ -19,17 +19,15 @@ module Parser.Lang (
   
   import Text.Parsec          ((<|>), (<?>), noneOf, optionMaybe)
   import Text.Parsec.Language (emptyDef)
-  import Text.Parsec.Error    (Message(Message), newErrorMessage)
   import Text.Parsec.Expr     (Operator(Prefix, Infix), Assoc(AssocRight, AssocNone)
                               , buildExpressionParser                               )
-  import Text.Parsec.Prim     (Consumed(Consumed), Reply(Error), statePos, mkPT)
   import qualified Text.Parsec.Token as Token (LanguageDef, TokenParser
                                               , commaSep1, identLetter, identStart
                                               , identifier, makeTokenParser, parens
                                               , reserved, reservedOp, reservedOpNames
                                               , stringLiteral, whiteSpace             )
   
-  import Expr         (Atom(..), Expr(..), Op(..), Value(UnparsedVal), typecheck)
+  import Expr.Untyped (Expr(..), Op(..), BinOp(..))
   import Query        (Selection(..), JoinType(..))
   import Parser.Base  (Parser, OperatorTable)
   
@@ -66,36 +64,26 @@ module Parser.Lang (
   
   
   fsql_ops :: OperatorTable Expr
-  fsql_ops = [ [ Infix (reservedOp "==" $> Op Equal  ) AssocNone
-               , Infix (reservedOp "!=" $> Op NotEq  ) AssocNone
-               , Infix (reservedOp "<=" $> Op LessEq ) AssocNone
-               , Infix (reservedOp ">=" $> Op GreatEq) AssocNone
-               , Infix (reservedOp "<"  $> Op Less   ) AssocNone
-               , Infix (reservedOp ">"  $> Op Greater) AssocNone
-               , Infix (reservedOp "=~" $> Op Like   ) AssocNone ]
+  fsql_ops = [ [ Infix (reservedOp "==" $> BinOp (:==:)) AssocNone
+               , Infix (reservedOp "!=" $> BinOp (:/=:)) AssocNone
+               , Infix (reservedOp "<=" $> BinOp (:<=:)) AssocNone
+               , Infix (reservedOp ">=" $> BinOp (:>=:)) AssocNone
+               , Infix (reservedOp "<"  $> BinOp (:<:))  AssocNone
+               , Infix (reservedOp ">"  $> BinOp (:>:))  AssocNone
+               , Infix (reservedOp "=~" $> BinOp (:=~:)) AssocNone ]
              
-             , [ Prefix (reservedOp "!"  $> Not) ]
+             , [ Prefix (reservedOp "!"  $> Op (:!:)) ]
              
-             , [ Infix (reservedOp "&&" $> Op And) AssocRight ]
-             , [ Infix (reservedOp "||" $> Op Or ) AssocRight ] ]
+             , [ Infix (reservedOp "&&" $> BinOp (:&&:)) AssocRight ]
+             , [ Infix (reservedOp "||" $> BinOp (:||:)) AssocRight ] ]
   
   fsql_expr :: Parser Expr
-  fsql_expr = fsql_untypedExpr
-          >>= fsql_typecheck
-  
-  fsql_untypedExpr :: Parser Expr
-  fsql_untypedExpr = buildExpressionParser fsql_ops (
-                      parens fsql_untypedExpr
-                      <|>(Atom . Sel <$> fsql_selection)
-                      <|>(Atom . Val . UnparsedVal <$> fsql_ident)
-                      <?> "expression"
-                     )
-  
-  fsql_typecheck :: Expr -> Parser Expr
-  fsql_typecheck = either pfail return . typecheck
-    where -- pfail : use `Consumed` so previous error messages are cleared.
-      pfail err = mkPT $ return . Consumed . return . Error
-                          . newErrorMessage (Message (show err)) . statePos
+  fsql_expr = buildExpressionParser fsql_ops (
+                parens fsql_expr
+                <|>(Sel <$> fsql_selection)
+                <|>(Val <$> fsql_ident)
+                <?> "expression"
+              )
   
   
     -- fsql_langDef ------------------------------------------------------------------------

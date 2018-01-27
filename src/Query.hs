@@ -12,7 +12,7 @@
 module Query (
     Query(..), Selection(..), Source(..), JoinType(..), Predicate,
     FetchError(..),
-    fetch_query
+    add_pred, fetch_query
   ) where
   
   import Prelude hiding (Either(..))
@@ -73,6 +73,9 @@ module Query (
     show (IOErr e)         = show e
   
   
+  
+  add_pred :: Query -> Predicate -> Query
+  add_pred (Query sel src _) = Query sel src . Just
   
   -- fetch_query -------------------------------------------------------------------------
   fetch_query :: Query -> ExceptT FetchError IO [[String]]

@@ -19,8 +19,8 @@ module Parser (
   import Text.Parsec        ((<?>), between, eof, optionMaybe, parse)
   import Text.Parsec.Error  (ParseError)
   
-  import Query        (Query(..), Source(..), Predicate, Selection)
-  import Expr         (expr_to_Pred)
+  import Query        (Query(..), Source(..), Selection)
+  import Expr.Untyped (Expr)
   import Parser.Base  (Parser)
   import Parser.Lang  (fsql_expr, fsql_ident, fsql_joinType, fsql_recursive
                       , fsql_selection, fsql_selections, reserved, whiteSpace)
@@ -28,12 +28,12 @@ module Parser (
   
   fsql_parse :: (Monad m) => String  -- Source name
                           -> String  -- Input
-                          -> ExceptT ParseError m Query
+                          -> ExceptT ParseError m (Query, Maybe Expr)
   fsql_parse name = ExceptT . return . parse (between whiteSpace eof fsql) name
   
   
-  fsql :: Parser Query
-  fsql = Query
+  fsql :: Parser (Query, Maybe Expr) -- The query and maybe the untyped expr.
+  fsql = (\ sels src pred -> (Query sels src Nothing, pred))
       <$> fsql_select
       <*> fsql_source
       <*> optionMaybe fsql_where
@@ -63,8 +63,7 @@ module Parser (
              <?> "from statement"
   
   -- Parse the predicate of the query
-  fsql_where :: Parser Predicate
-  fsql_where = expr_to_Pred
-            <$>(reserved "where"
-             *> fsql_expr)
+  fsql_where :: Parser Expr
+  fsql_where = reserved "where"
+             *> fsql_expr
             <?> "where statement"

@@ -22,26 +22,34 @@ module FSQL (
   import System.IO        (hPutStrLn, stderr)
   import System.IO.Error  (IOError, tryIOError)
   
-  import Query  (FetchError, fetch_query)
+  import Expr   (Expr, TypeError, compile)
+  import Query  (Query(..), FetchError, add_pred, fetch_query)
   import Parser (ParseError, fsql_parse)
   
   
   data Error = ParseErr ParseError
+             | TypeErr  TypeError
              | FetchErr FetchError
              | IOErr    IOError
   
   
   fsql_run :: String -> String -> IO ExitCode
   fsql_run name input =
-    do query  <- withExceptT ParseErr $ fsql_parse name input
+    do expr   <- withExceptT ParseErr $ fsql_parse name input
+       query  <- withExceptT TypeErr  $ compile_expr expr
        result <- withExceptT FetchErr $ fetch_query query
        print_result (unlines $ map (intercalate "\t") result) $> ExitSuccess
     `handleError` (
-      \case ParseErr e -> putErr ("Parse error:\n" ++ show e)  $> ExitFailure 1
-            FetchErr e -> putErr ("IO error:\n" ++ show e)     $> ExitFailure 2
-            IOErr    e -> putErr ("Output error:\n" ++ show e) $> ExitFailure 3
+      \case ParseErr e -> putErr ("Parse error:\n"  ++ show e) $> ExitFailure 1
+            TypeErr  e -> putErr ("Type error:\n"   ++ show e) $> ExitFailure 2
+            FetchErr e -> putErr ("IO error:\n"     ++ show e) $> ExitFailure 3
+            IOErr    e -> putErr ("Output error:\n" ++ show e) $> ExitFailure 4
     )
     where
+      compile_expr :: (Monad m) => (Query, Maybe Expr) -> ExceptT TypeError m Query
+      compile_expr (q, Nothing) = return q
+      compile_expr (q, Just e) = add_pred q <$> compile e
+      
       print_result :: String -> ExceptT Error IO ()
       print_result = ExceptT . fmap (left IOErr) . tryIOError . putStrLn
       
