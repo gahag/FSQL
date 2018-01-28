@@ -36,7 +36,7 @@ select name from path/to/dir inner join path/to/dir2 on date
 ```
 
 ### Where clause
-FSQL supports simple predicates for filtering the results.  
+FSQL supports simple predicates.  
 A predicate is a logical expression that dictates whether a file or directory will be included in the final result.
 #### Selection
 A selection in an expression will represent the respective information from the file.  
@@ -63,8 +63,8 @@ A **regex** literal must be a valid [POSIX extended regular expression](https://
 #### Types
 FSQL features a type checker for expressions.  
 Logical operators must have both operands of boolean type.  
-Relational operators must have operands of the same type, and an selection operand will dictate the type.  
-The regex match operator must have a left operand of type string, and a right operand of type regex literal.  
+Relational operators must have operands of the same type, and an selection operand will dictate the type, defaulting to **string**.  
+The regex match operator must have a left operand of type string, and a right operand must be a regex literal.  
 When used with the regex match operator, the selections **date** and **size** are converted to string.
 #### Examples
 ```sql
@@ -82,8 +82,8 @@ FSQL comes as a single executable file, that can be downloaded from the
 
 ### Build from source
 FSQL uses [Stack](https://www.haskellstack.org/): a modern, cross-platform build tool for Haskell code.  
-To build FSQL, you need to have stack installed.  
-With just 3 commands, it will download the compiler, build all dependencies and generate the final executable.
+To build FSQL, you must have Stack installed.  
+With just 3 commands, it will download the compiler, build all dependencies and generate the final executable:
 ```sh
 $ stack setup
 $ stack build
