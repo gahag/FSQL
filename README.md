@@ -48,11 +48,11 @@ A **string** literal may contain any characters.
 A **date** literal must be a valid YYYY-MM-DD date.  
 A **size** literal must be a valid integer.  
 A **regex** literal must be a valid [POSIX extended regular expression](https://www.gnu.org/software/findutils/manual/html_node/find_html/posix_002dextended-regular-expression-syntax.html).
-##### Quoting and escaping
-**Any** literal may or not be enclosed in double quotes.  
-Escape characters are only allowed in quoted literals. There are two special escape sequences: **\\"** and **\\\\**, which evaluate to **"** and **\\** respectively. Any other escape sequence is kept **as is**.  
-This is specially relevant when writing regex literals.  
-Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
+
+
+**Any** literal may or not be enclosed in double quotes. Escape characters are only allowed in quoted literals.  
+There are two special escape sequences: **\\"** and **\\\\**, which evaluate to **"** and **\\** respectively. Any other escape sequence is kept **as is**.  
+This is specially relevant when writing regex literals. Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
 #### Operators
 | Operator           | Meaning                     |
 | ------------------ | --------------------------- |
@@ -69,7 +69,7 @@ Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
 #### Types
 FSQL features a type checker for expressions.  
 Logical operators must have both operands of boolean type.  
-Relational operators must have operands of the same type, and an selection operand will dictate the type, defaulting to **string**.  
+Relational operators must have operands of the same type, and a selection operand will dictate the type, defaulting to **string**.  
 The regex match operator must have a left operand of type string, and a right operand must be a regex literal.  
 When used with the regex match operator, the selections **date** and **size** are converted to string.
 #### Examples
