@@ -40,10 +40,10 @@ module FSQL (
        result <- withExceptT FetchErr $ fetch_query query
        print_result (unlines $ map (intercalate "\t") result) $> ExitSuccess
     `handleError` (
-      \case ParseErr e -> putErr ("Parse error:\n"  ++ show e) $> ExitFailure 1
-            TypeErr  e -> putErr ("Type error:\n"   ++ show e) $> ExitFailure 2
-            FetchErr e -> putErr ("IO error:\n"     ++ show e) $> ExitFailure 3
-            IOErr    e -> putErr ("Output error:\n" ++ show e) $> ExitFailure 4
+      \case ParseErr e -> putErr ("Parse error:\n"  ++ show e) $> ExitFailure 2
+            TypeErr  e -> putErr ("Type error:\n"   ++ show e) $> ExitFailure 3
+            FetchErr e -> putErr ("IO error:\n"     ++ show e) $> ExitFailure 4
+            IOErr    e -> putErr ("Output error:\n" ++ show e) $> ExitFailure 5
     )
     where
       compile_expr :: (Monad m) => (Query, Maybe Expr) -> ExceptT TypeError m Query

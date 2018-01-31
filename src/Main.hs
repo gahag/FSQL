@@ -17,9 +17,9 @@ module Main (
   
   import System.Environment (getArgs)
   import System.Exit        (ExitCode(..), exitWith)
+  import System.IO          (hPutStr, stderr)
   
   import CLI      (fsql_cli)
-  import FSQL     (fsql_run)
   import Version  (aboutMsg)
   
   
@@ -29,6 +29,9 @@ module Main (
   fsql_main :: [String] -> IO ExitCode
   fsql_main = \case []              -> fsql_cli $> ExitSuccess
                     [v] | version v -> putStrLn aboutMsg $> ExitSuccess
-                    args            -> fsql_run "command line" (unwords args)
+                    args            -> hPutStr stderr (
+                                        unlines [ "Error:"
+                                                , "Invalid arguments: " ++ show args ]
+                                       ) $> ExitFailure 1
     where
       version v = v `elem` ["-v", "--version"]

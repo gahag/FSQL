@@ -25,13 +25,7 @@ module CLI (
   
   
   usage :: String
-  usage = unlines
-    [ aboutMsg
-    , "Enter query statement or quit|exit to leave."
-    , "FSQL can also be used from the command line: fsql <query>"
-    , "Please note that when using FSQL from the command line, where statements\
-      \ should be quoted because they may be interpreted as shell commands. \
-      \Also, Double quotes must be escaped." ]
+  usage = unlines [ aboutMsg, "Enter query statement or quit|exit to leave." ]
   
   
   fsql_cli :: IO ()

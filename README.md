@@ -3,9 +3,10 @@
 FSQL is a tool for performing queries on the local file system with syntax similar to SQL.
 
 
-## Usage examples
+## Usage
 
-FSQL will evaluate a single query if provided from the command line, or launch as a REPL otherwise.
+FSQL will always launch as a REPL.  
+Having a single query provided from the command line is not viable, as there are many aspects of the language that may conflict with the shell's syntax (that's at least for bash). Workarounds might be doable, but would be too complex to implement and to understand when writing queries.
 
 ### Basic select clause
 The supported selections are:  
@@ -43,10 +44,15 @@ A selection in an expression will represent the respective information from the 
 The supported selections are: **name**, **date**, **size**.
 #### Literals
 There are 4 types of literals: **string**, **date**, **size**, **regex**.  
-A **string** literal may or not be enclosed in double quotes.  
+A **string** literal may contain any characters.  
 A **date** literal must be a valid YYYY-MM-DD date.  
 A **size** literal must be a valid integer.  
-A **regex** literal must be a valid [POSIX extended regular expression](https://www.gnu.org/software/findutils/manual/html_node/find_html/posix_002dextended-regular-expression-syntax.html), and it may or not be enclosed in double quotes.
+A **regex** literal must be a valid [POSIX extended regular expression](https://www.gnu.org/software/findutils/manual/html_node/find_html/posix_002dextended-regular-expression-syntax.html).
+##### Quoting and escaping
+**Any** literal may or not be enclosed in double quotes.  
+Escape characters are only allowed in quoted literals. There are two special escape sequences: **\\"** and **\\\\**, which evaluate to **"** and **\\** respectively. Any other escape sequence is kept **as is**.  
+This is specially relevant when writing regex literals.  
+Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
 #### Operators
 | Operator           | Meaning                     |
 | ------------------ | --------------------------- |
@@ -68,9 +74,10 @@ The regex match operator must have a left operand of type string, and a right op
 When used with the regex match operator, the selections **date** and **size** are converted to string.
 #### Examples
 ```sql
-select date from path/to/dir where name == file && date >= 2015-12-30
-select size from path/to/dir where name =~ .*test-[1-9]
-select name from path/to/dir where size > 20000
+select date, name from path/to/dir where name == file && date >= 2015-12-30
+select size, name from path/to/dir where size > 20000
+select date, size, name from path/to/dir where name =~ .*test-[1-9]
+select date, size, name from path/to/dir where name =~ "file-with-literal-plus-\+-sign\.txt"
 ```
 
 

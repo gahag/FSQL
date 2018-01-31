@@ -22,7 +22,7 @@ module Parser (
   import Query        (Query(..), Source(..), Selection)
   import Expr.Untyped (Expr)
   import Parser.Base  (Parser)
-  import Parser.Lang  (fsql_expr, fsql_ident, fsql_joinType, fsql_recursive
+  import Parser.Lang  (fsql_dir, fsql_expr, fsql_joinType, fsql_recursive
                       , fsql_selection, fsql_selections, reserved, whiteSpace)
   
   
@@ -51,11 +51,11 @@ module Parser (
                                    Just (j, fp', sel) -> Join rec j (fp, fp') sel)
              <$> fsql_recursive  -- recursive keyword.
              <*  reserved "from" -- from keyword.
-             <*> fsql_ident      -- source directory.
+             <*> fsql_dir        -- source directory.
              <*> optionMaybe (   -- optional join:
                   (,,) <$> fsql_joinType   -- join type keyword (inner, outer, etc).
                        <*  reserved "join" -- join keyword.
-                       <*> fsql_ident      -- source directory.
+                       <*> fsql_dir        -- source directory.
                        <*  reserved "on"   -- on keyword.
                        <*> fsql_selection  -- join selection (join by name, date, etc).
                        <?> "join statement"
