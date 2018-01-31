@@ -51,8 +51,9 @@ A **regex** literal must be a valid [POSIX extended regular expression](https://
 
 
 **Any** literal may or not be enclosed in double quotes. Escape characters are only allowed in quoted literals.  
-There are two special escape sequences: **\\"** and **\\\\**, which evaluate to **"** and **\\** respectively. Any other escape sequence is kept **as is**.  
-This is specially relevant when writing regex literals. Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
+There are two special escape sequences: **\\"** and **\\\\**, which evaluate to **"** and **\\** respectively.  
+Any other escape sequence is kept **as is**.  
+This is specially relevant for regex literals. Example: "a\\<b\\"c.d" is equivalent to the regex **a\\<b"c.d**
 #### Operators
 | Operator           | Meaning                     |
 | ------------------ | --------------------------- |
