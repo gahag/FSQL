@@ -1,0 +1,16 @@
+version: "3"
+
+services:
+  build:
+    build:
+      context: .
+      dockerfile: dockerfile
+      args:
+        name: fsql
+        from: haskell:latest
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+    command: stack build
+    volumes:
+      - ./:/usr/src/fsql/
+    network_mode: bridge

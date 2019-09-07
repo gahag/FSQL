@@ -1,2 +1,3 @@
+.stack/
 .stack-work/
-src/TAGS
+stack.yaml.lock
